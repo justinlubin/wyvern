@@ -1,0 +1,6 @@
+resource type Heap
+  effect read
+  effect write
+
+  def getWithDefault(loc : Int, otherwise : Unit => String) : {read} String
+  def set(loc : Int, s : String) : {write} Unit

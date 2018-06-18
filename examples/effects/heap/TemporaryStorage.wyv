@@ -1,0 +1,15 @@
+module def temporaryStorage(mem : Memory) : Heap
+
+import wyvern.String
+import wyvern.collections.map
+
+import effects.MemoryEffects
+
+effect read = {MemoryEffects.load}
+effect write = {MemoryEffects.store}
+
+def getWithDefault(loc : Int, otherwise : Unit => String) : {read} String
+  mem.load(loc).getOrElse(otherwise)
+
+def set(loc : Int, s : String) : {write} Unit
+  mem.store(loc, s)

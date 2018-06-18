@@ -1,0 +1,27 @@
+module def localStorage(file : File) : Heap
+
+import wyvern.String
+
+import effects.FileEffects
+
+effect read = {FileEffects.read}
+effect write = {FileEffects.write, FileEffects.create}
+
+def filenameFromLoc(loc : Int) : String
+  "localStorage/file" + String.ofInt(loc) + ".txt"
+
+def getWithDefault(loc : Int, otherwise : Unit => String) : {read} String
+  val f = filenameFromLoc(loc)
+
+  if (file.exists(f))
+    file.read(f)
+   else
+    otherwise()
+
+def set(loc : Int, s : String) : {write} Unit
+  val f = filenameFromLoc(loc)
+
+  if (!file.exists(f))
+    file.create(f)
+
+  file.write(f, s)

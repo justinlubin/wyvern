@@ -1,0 +1,4 @@
+module DatabaseEffects
+
+effect query = {system.ffiEffect}
+effect update = {system.ffiEffect}

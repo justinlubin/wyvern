@@ -1,0 +1,36 @@
+require platform
+
+import stdout
+import platform.Network
+
+import api.File
+import api.Database
+import api.Memory
+
+import Heap
+import heap.LocalStorage
+import heap.NetworkStorage
+import heap.TemporaryStorage
+
+import wyvern.collections.list
+
+// Platform resources
+val stdout = stdout(platform)
+val nw = Network(platform)
+
+// Low-level libraries
+val file = File(stdout)
+val db = Database(nw)
+val mem = Memory()
+
+// Heap implementations
+val ls : Heap = LocalStorage(file)
+val ns : Heap = NetworkStorage(db)
+val ts : Heap = TemporaryStorage(mem)
+
+var heaps : list.List[Heap] = list.make[Heap]()
+heaps.append(ls)
+heaps.append(ns)
+heaps.append(ts)
+
+// Do things with the heaps
