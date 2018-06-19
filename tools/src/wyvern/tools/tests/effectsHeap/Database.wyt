@@ -1,0 +1,8 @@
+resource type Database
+  effect queryEffect
+  effect updateEffect
+
+  // Would return an option, but issue #251 is not resolved
+  def query(queryString : String) : {queryEffect} String
+  def update(queryString : String) : {updateEffect} Unit
+  def queryAndUpdate(queryString : String) : {queryEffect, updateEffect} String

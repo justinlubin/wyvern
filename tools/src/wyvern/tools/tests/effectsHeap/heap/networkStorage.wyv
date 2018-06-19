@@ -2,16 +2,18 @@ module def networkStorage(db : Database) : Heap
 
 import wyvern.String
 
-import effects.DatabaseEffects
-
-effect read = {DatabaseEffects.update}
-effect write = {DatabaseEffects.query}
+effect read = {db.queryEffect}
+effect write = {db.updateEffect}
 
 def escape(s : String) : String
   s
 
 def getWithDefault(loc : Int, otherwise : Unit => String) : {read} String
-  db.query("@loc" + String.ofInt(loc)).getOrElse(otherwise)
+  val s = db.query("@loc" + String.ofInt(loc))
+  if (String.equals(s, "__$EMPTY$__"))
+    otherwise()
+   else
+    s
 
 def set(loc : Int, s : String) : {write} Unit
   db.update("@loc" + String.ofInt(loc) + "='" + escape(s) + "'")

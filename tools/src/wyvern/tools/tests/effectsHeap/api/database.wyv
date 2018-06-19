@@ -1,0 +1,13 @@
+module def database(platform : Platform)
+
+effect queryEffect = {system.ffiEffect}
+effect updateEffect = {system.ffiEffect}
+
+def query(queryString : String) : {queryEffect} String
+  ""
+
+def update(queryString : String) : {updateEffect} Unit
+  unit
+
+def queryAndUpdate(queryString : String) : {queryEffect, updateEffect} String
+  ""

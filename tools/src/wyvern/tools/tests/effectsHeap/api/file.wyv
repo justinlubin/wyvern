@@ -1,0 +1,21 @@
+module def file(platform : Platform)
+
+effect readEffect = {system.ffiEffect}
+effect writeEffect = {system.ffiEffect}
+effect appendEffect = {system.ffiEffect}
+effect createEffect = {system.ffiEffect}
+
+def read(f : String) : {readEffect} String
+  ""
+
+def write(f : String, s : String) : {writeEffect} Unit
+  unit
+
+def append(f : String, s : String) : {appendEffect} Unit
+  unit
+
+def create(f : String) : {createEffect} Unit
+  unit
+
+def exists(f : String) : Boolean
+  true

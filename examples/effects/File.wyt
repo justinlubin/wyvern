@@ -1,8 +1,0 @@
-import effects.FileEffects
-
-resource type File
-  def read(f : String) : {FileEffects.read} String
-  def write(f : String, s : String) : {FileEffects.write} Unit
-  def append(f : String, s : String) : {FileEffects.append} Unit
-  def create(f : String) : {FileEffects.create} Unit
-  def exists(f : String) : Boolean

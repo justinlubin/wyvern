@@ -1,4 +1,0 @@
-module def network(platform : Platform)
-
-def id(x : Int) : Int
-  x

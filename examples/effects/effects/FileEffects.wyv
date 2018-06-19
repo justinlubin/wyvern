@@ -1,6 +1,0 @@
-module FileEffects
-
-effect read = {system.ffiEffect}
-effect write = {system.ffiEffect}
-effect append = {system.ffiEffect}
-effect create = {system.ffiEffect}

@@ -1,0 +1,8 @@
+resource type Memory
+  effect storeEffect
+  effect loadEffect
+
+  def store(x : Int, s : String) : {storeEffect} Unit
+  // Would return an option, but issue #251 is not resolved
+  def load(x : Int) : {loadEffect} String
+  def modify(x : Int, f : String => String) : {loadEffect, storeEffect} Unit

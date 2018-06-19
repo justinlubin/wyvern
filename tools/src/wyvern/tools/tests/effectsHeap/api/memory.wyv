@@ -1,0 +1,20 @@
+module def memory()
+
+import wyvern.collections.map
+
+effect storeEffect = {system.ffiEffect}
+effect loadEffect = {system.ffiEffect}
+
+type Map = map.Map
+
+// Int -> String
+var memory : Map = map.make((x : Int, y : Int) => x == y)
+
+def store(x : Int, s : String) : {storeEffect} Unit
+  memory.put(x, s)
+
+def load(x : Int) : {loadEffect} String
+  memory.get(x).getOrElse(() => "__$EMPTY$__")
+
+def modify(x : Int, f : String => String) : {loadEffect, storeEffect} Unit
+  store(x, f(load(x)))

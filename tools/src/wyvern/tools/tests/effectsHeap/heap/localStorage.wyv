@@ -2,10 +2,8 @@ module def localStorage(file : File) : Heap
 
 import wyvern.String
 
-import effects.FileEffects
-
-effect read = {FileEffects.read}
-effect write = {FileEffects.write, FileEffects.create}
+effect read = {file.readEffect}
+effect write = {file.writeEffect, file.createEffect}
 
 def filenameFromLoc(loc : Int) : String
   "localStorage/file" + String.ofInt(loc) + ".txt"

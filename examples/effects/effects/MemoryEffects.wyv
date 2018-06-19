@@ -1,4 +1,0 @@
-module MemoryEffects
-
-effect store = {system.ffiEffect}
-effect load = {system.ffiEffect}
