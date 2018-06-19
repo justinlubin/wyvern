@@ -1,4 +1,4 @@
-module def memory()
+module def memory() : effects.Memory
 
 import wyvern.collections.map
 

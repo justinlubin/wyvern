@@ -1,4 +1,4 @@
-module def file(platform : Platform)
+module def file(platform : Platform) : effects.File
 
 effect readEffect = {system.ffiEffect}
 effect writeEffect = {system.ffiEffect}

@@ -9,7 +9,6 @@ import org.junit.runners.Suite.SuiteClasses;
 import wyvern.tools.tests.CoreParserTests;
 import wyvern.tools.tests.DemoTests;
 import wyvern.tools.tests.EffectSystemTests;
-import wyvern.tools.tests.EffectsHeapExampleTest;
 import wyvern.tools.tests.ExampleTests;
 import wyvern.tools.tests.FFITests;
 import wyvern.tools.tests.Figures;
@@ -40,7 +39,6 @@ import wyvern.tools.tests.TransformTests;
         {
             // CURRENTLY IMPORTANT TESTS HERE
             LexingTests.class,      // tests the new lexer
-            EffectsHeapExampleTest.class,
             CoreParserTests.class,  // tests the new parser
             ILTests.class,          // tests the new IL
             ILTestsWithPrelude.class,          // tests the new IL and the standard prelude

@@ -1,4 +1,4 @@
-module def networkStorage(db : Database) : Heap
+module def networkStorage(db : effects.Database) : effects.Heap
 
 import wyvern.String
 

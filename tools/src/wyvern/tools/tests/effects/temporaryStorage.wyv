@@ -1,4 +1,4 @@
-module def temporaryStorage(mem : Memory) : Heap
+module def temporaryStorage(mem : effects.Memory) : effects.Heap
 
 import wyvern.String
 import wyvern.collections.map

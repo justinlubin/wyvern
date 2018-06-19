@@ -1,4 +1,4 @@
-module def database(platform : Platform)
+module def database(platform : Platform) : effects.Database
 
 effect queryEffect = {system.ffiEffect}
 effect updateEffect = {system.ffiEffect}

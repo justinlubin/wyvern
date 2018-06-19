@@ -2,14 +2,14 @@ require platform
 
 import debug
 
-import api.file
-import api.database
-import api.memory
+import effects.file
+import effects.database
+import effects.memory
 
-import Heap
-import heap.localStorage
-import heap.networkStorage
-import heap.temporaryStorage
+import effects.Heap
+import effects.localStorage
+import effects.networkStorage
+import effects.temporaryStorage
 
 import wyvern.collections.list
 

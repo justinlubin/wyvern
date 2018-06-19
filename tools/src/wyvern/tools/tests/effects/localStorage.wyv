@@ -1,4 +1,4 @@
-module def localStorage(file : File) : Heap
+module def localStorage(file : effects.File) : effects.Heap
 
 import wyvern.String
 
