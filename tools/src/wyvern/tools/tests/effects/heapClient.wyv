@@ -1,36 +1,8 @@
-require platform
+import wyvern.option
 
-import debug
+type T
+  def a() : Int
+  metadata new
+    def b() : option.Option = option.None[Int]()
 
-import effects.file
-import effects.database
-import effects.memory
-
-import effects.Heap
-import effects.localStorage
-import effects.networkStorage
-import effects.temporaryStorage
-
-import wyvern.collections.list
-
-// Low-level APIs
-val file = file(platform)
-val db = database(platform)
-val mem = memory()
-
-// Heap implementations (only ts isn't made up of stubs / only ts works)
-val ls : Heap = localStorage(file)
-val ns : Heap = networkStorage(db)
-val ts : Heap = temporaryStorage(mem)
-
-var heaps : list.List[Heap] = list.make[Heap]()
-heaps.append(ls)
-heaps.append(ns)
-heaps.append(ts)
-
-// Do things with the heaps
-debug.print(ts.getWithDefault(0, () => "hello"))
-debug.println()
-
-ts.set(0, "goodbye")
-ts.getWithDefault(0, () => "hello")
+unit
