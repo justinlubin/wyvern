@@ -38,23 +38,23 @@ import wyvern.tools.tests.TransformTests;
 @SuiteClasses(
         {
             // CURRENTLY IMPORTANT TESTS HERE
-            LexingTests.class,      // tests the new lexer
-            CoreParserTests.class,  // tests the new parser
-            ILTests.class,          // tests the new IL
-            ILTestsWithPrelude.class,          // tests the new IL and the standard prelude
-            RossettaCodeTests.class, // a few of these are out of date, but some use new everything
-            FFITests.class,
-            OIRTests.class,
-            Figures.class,
-            Illustrations.class,        // tests the new IL
-            DemoTests.class,
-            ReflectionTests.class,
-            TransformTests.class,
-            FreeVars.class,
-            StdlibTests.class,      // tests the standard library with the new IL
-            ExampleTests.class,      // tests the examples
+//            LexingTests.class,      // tests the new lexer
+//            CoreParserTests.class,  // tests the new parser
+//            ILTests.class,          // tests the new IL
+//            ILTestsWithPrelude.class,          // tests the new IL and the standard prelude
+//            RossettaCodeTests.class, // a few of these are out of date, but some use new everything
+//            FFITests.class,
+//            OIRTests.class,
+//            Figures.class,
+//            Illustrations.class,        // tests the new IL
+//            DemoTests.class,
+//            ReflectionTests.class,
+//            TransformTests.class,
+//            FreeVars.class,
+//            StdlibTests.class,      // tests the standard library with the new IL
+//            ExampleTests.class,      // tests the examples
             EffectSystemTests.class,
-            ModuleSystemTests.class,        // tests the new IL
+//            ModuleSystemTests.class,        // tests the new IL
         }
         )
 public class AntRegressionTestSuite { }
