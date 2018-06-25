@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import wyvern.target.corewyvernIL.astvisitor.ASTVisitor;
+import wyvern.target.corewyvernIL.decl.TypeDeclaration;
 import wyvern.target.corewyvernIL.decltype.AbstractTypeMember;
 import wyvern.target.corewyvernIL.decltype.ConcreteTypeMember;
 import wyvern.target.corewyvernIL.decltype.DeclType;
@@ -83,9 +84,32 @@ public class NominalType extends ValueType {
         }
     }
 
+    private static int nestingCount = 0;
+    
+    @Override
+    public boolean isTSubtypeOf(Type sourceType, TypeContext ctx, FailureReason reason) {
+        if (super.isTSubtypeOf(sourceType, ctx, reason)) {
+            return true;
+        }
+        // try looking up my source decl
+        DeclType t = getSourceDeclType(ctx);
+        if (t instanceof ConcreteTypeMember) {
+            ConcreteTypeMember ctm = (ConcreteTypeMember) t;
+            return ctm.getSourceType().isTSubtypeOf(sourceType, ctx, reason);
+        }
+        return false;
+    }
+
+    
     private DeclType getSourceDeclType(TypeContext ctx) {
         final ValueType t = path.typeCheck(ctx, null);
+        nestingCount++;
+        if (nestingCount > 100) {
+            // check for excessive recursion failed
+            throw new RuntimeException("Internal error: recursion");
+        }
         final StructuralType structuralType = t.getStructuralType(ctx);
+        nestingCount--;
         // return any DefinedTypeMember or AbstractTypeMember
         return structuralType.findMatchingDecl(typeMember, cdt -> !(cdt instanceof DefinedTypeMember || cdt instanceof AbstractTypeMember), ctx);
     }
@@ -186,7 +210,9 @@ public class NominalType extends ValueType {
                 return true;
             } else {
                 // report error in terms of original type
-                reason.setReason("type " + this + " is abstract and cannot be checked to be a subtype of " + t);
+                if (!reason.isDefined()) {
+                    reason.setReason("type " + this + " is abstract and cannot be checked to be a subtype of " + t);
+                }
                 return false;
             }
         }
@@ -273,6 +299,11 @@ public class NominalType extends ValueType {
         if (!(v instanceof ObjectValue)) {
             throw new RuntimeError("internal invariant: can only get the tag of part of an object, did this typecheck?");
         }
-        return new Tag((ObjectValue) v, this.getTypeMember());
+        ObjectValue object = (ObjectValue) v;
+        TypeDeclaration decl = (TypeDeclaration) object.findDecl(this.getTypeMember(), true);
+        if (decl.getSourceType() instanceof NominalType) {
+            return ((NominalType) decl.getSourceType()).getTag(object.getEvalCtx());
+        }
+        return new Tag(object, this.getTypeMember());
     }
 }

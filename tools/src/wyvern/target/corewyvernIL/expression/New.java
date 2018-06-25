@@ -48,12 +48,12 @@ public class New extends Expression {
 
     /** computes the type itself, uses a don't care selfName */
     public New(List<NamedDeclaration> decls, FileLocation loc) {
-        this(decls, "dontcare", typeOf(decls), loc);
+        this(decls, new BindingSite("dontcare"), typeOf(decls), loc);
     }
 
-    public New(List<? extends Declaration> decls, String selfName, ValueType type, FileLocation loc) {
+    /*public New(List<? extends Declaration> decls, String selfName, ValueType type, FileLocation loc) {
         this(decls, new BindingSite(selfName), type, loc);
-    }
+    }*/
     public New(List<? extends Declaration> decls, BindingSite selfSite, ValueType type, FileLocation loc) {
         super(type, loc);
         this.decls = decls;
@@ -146,7 +146,7 @@ public class New extends Expression {
         StructuralType actualT = new StructuralType(selfSite, dts);
         FailureReason r = new FailureReason();
         if (!actualT.isSubtypeOf(requiredT, ctx, r)) {
-            ToolError.reportError(ErrorMessage.NOT_SUBTYPE, this, actualT.getSelfName(), requiredT.getSelfName(), r.getReason());
+            ToolError.reportError(ErrorMessage.NOT_SUBTYPE, this, actualT.desugar(ctx), requiredT.desugar(ctx), r.getReason());
         }
 
         if (isResource && !requiredT.isResource(GenContext.empty())) {
