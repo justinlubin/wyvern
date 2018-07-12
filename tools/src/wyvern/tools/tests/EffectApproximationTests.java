@@ -49,7 +49,7 @@ public class EffectApproximationTests {
 
     @Test
     public void importNewEffect() throws ParseException {
-        Set<Effect> expectedEffectBound = makeEffectSet("write");
+        Set<Effect> expectedEffectBound = makeEffectSet("write", "log");
         TestUtil.doApprox(PATH, "approx.userModule4", expectedEffectBound);
     }
 
@@ -61,19 +61,19 @@ public class EffectApproximationTests {
 
     @Test
     public void globallyAvailableEffectPureModule() throws ParseException {
-        Set<Effect> expectedEffectBound = makeEffectSet();
+        Set<Effect> expectedEffectBound = makeEffectSet("myEffect");
         TestUtil.doApprox(PATH, "approx.userModule6", expectedEffectBound);
     }
 
     @Test
     public void globallyAvailableEffectResourceModule() throws ParseException {
-        Set<Effect> expectedEffectBound = makeEffectSet("write");
+        Set<Effect> expectedEffectBound = makeEffectSet("write", "myEffect");
         TestUtil.doApprox(PATH, "approx.userModule7", expectedEffectBound);
     }
 
     @Test
     public void nonEmptyGloballyAvailableEffectPureModule() throws ParseException {
-        Set<Effect> expectedEffectBound = makeEffectSet();
+        Set<Effect> expectedEffectBound = makeEffectSet("myEffect");
         TestUtil.doApprox(PATH, "approx.userModule8", expectedEffectBound);
     }
 }

@@ -16,7 +16,6 @@ import wyvern.target.corewyvernIL.expression.IExpr;
 import wyvern.target.corewyvernIL.modules.Module;
 import wyvern.target.corewyvernIL.support.InterpreterState;
 import wyvern.target.corewyvernIL.support.TypeContext;
-import wyvern.target.corewyvernIL.type.ValueType;
 import wyvern.tools.errors.ToolError;
 
 public final class Interpreter {
@@ -78,10 +77,10 @@ public final class Interpreter {
             TailCallVisitor.annotate(program);
 
             // For printing the effects of a program
-//            Set<Effect> effectBound = EffectApproximationVisitor.approx(m);
+//            Set<Effect> effectBound = EffectApproximationVisitor.approximateEffectBound(state.getResolver(), m);
 //            System.out.println("Effect bound: {");
 //            for (Effect e : effectBound) {
-//                System.out.println(e);
+//                System.out.println("  " + e.getName());
 //            }
 //            System.out.println("}");
 

@@ -3,25 +3,92 @@ package wyvern.target.corewyvernIL.astvisitor;
 import wyvern.stdlib.Globals;
 import wyvern.target.corewyvernIL.Case;
 import wyvern.target.corewyvernIL.FormalArg;
+import wyvern.target.corewyvernIL.VarBinding;
 import wyvern.target.corewyvernIL.decl.*;
 import wyvern.target.corewyvernIL.decltype.*;
 import wyvern.target.corewyvernIL.effects.Effect;
 import wyvern.target.corewyvernIL.effects.EffectSet;
 import wyvern.target.corewyvernIL.expression.*;
 import wyvern.target.corewyvernIL.modules.Module;
+import wyvern.target.corewyvernIL.support.ModuleResolver;
 import wyvern.target.corewyvernIL.type.*;
+import wyvern.tools.errors.HasLocation;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationState, Set<Effect>> {
-    public static Set<Effect> approx(Module m) {
-        EffectApproximationVisitor visitor = new EffectApproximationVisitor();
-        EffectApproximationState state = new EffectApproximationState(m.getDependencies());
-        return m.getExpression().getType().acceptVisitor(visitor, state);
+    private static Set<Variable> importsFromSeqExpr(SeqExpr seqExpr) {
+        Set<Variable> result = new HashSet<>();
+        List<HasLocation> elements = seqExpr.getElements();
+        int finalIndex = elements.size() - 1; // All but last element
+        for (int i = 0; i < finalIndex; i++) {
+            HasLocation element = elements.get(i);
+            if (!(element instanceof VarBinding)) {
+                continue;
+            }
+            IExpr body = ((VarBinding) element).getExpression();
+            if (!(body instanceof Variable)) {
+                continue;
+            }
+            Variable v = (Variable) body;
+            String name = v.getName();
+            if (name.length() < 4 || !name.substring(0, 4).equals("MOD$")) {
+                continue;
+            }
+            result.add(v);
+        }
+        return result;
+    }
+
+    private static Set<Variable> imports(IExpr program) {
+        if (program instanceof New) {
+            List<Declaration> decls = ((New) program).getDecls();
+            if (decls.size() == 0) {
+                throw new RuntimeException("program has no decls: " + program);
+            }
+            Declaration firstDecl = decls.get(0);
+            if (!(firstDecl instanceof DefDeclaration) || !firstDecl.getName().equals("apply")) {
+                throw new RuntimeException("program is module functor without apply method: " + program);
+            }
+            IExpr body = ((DefDeclaration) firstDecl).getBody();
+            if (!(body instanceof SeqExpr)) {
+                throw new RuntimeException("body of program's apply method is not SeqExpr: " + program);
+            }
+            return importsFromSeqExpr((SeqExpr) body);
+        } else if (program instanceof SeqExpr) {
+            return importsFromSeqExpr((SeqExpr) program);
+        } else {
+            throw new RuntimeException("cannot get imports of program: " + program);
+        }
+    }
+
+    public static Set<Effect> approximateEffectBound(ModuleResolver moduleResolver, Module module) {
+        EffectApproximationVisitor visitor =
+                new EffectApproximationVisitor();
+        EffectApproximationState state =
+                new EffectApproximationState(
+                        moduleResolver,
+                        Globals.getStandardTypeContext(),
+                        module.getDependencies()
+                );
+        return approxModule(visitor, state, module);
     }
 
     // approx
+
+    private static Set<Effect> approxModule(EffectApproximationVisitor visitor, EffectApproximationState state, Module module) {
+        // TODO Check if annotated here
+
+        Set<Effect> result = new HashSet<>();
+        Set<Variable> programImports = imports(module.getExpression());
+        for (Variable programImport : programImports) {
+            result.addAll(approxModule(visitor, state, state.resolveModule(programImport)));
+        }
+        result.addAll(module.getExpression().getType().acceptVisitor(visitor, state));
+        return result;
+    }
 
     @Override
     public Set<Effect> visit(EffectApproximationState state, StructuralType structuralType) {
@@ -39,7 +106,7 @@ public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationSt
             // Found in module dependencies
             return resolvedType.acceptVisitor(this, state);
         } else {
-            ValueType vt = nominalType.getCanonicalType(Globals.getStandardTypeContext());
+            ValueType vt = nominalType.getCanonicalType(state.getCachedStandardContext());
             if (vt != nominalType) {
                 // Found in prelude
                 return new HashSet<>(); // TODO; java has effects, for example
