@@ -32,48 +32,48 @@ public class EffectApproximationTests {
     @Test
     public void capabilityPassedIntoFunctorResourceModule() throws ParseException {
         Set<Effect> expectedEffectBound = makeEffectSet("log");
-        TestUtil.doApproxScript(PATH, "approx.userModule1", expectedEffectBound);
+        TestUtil.doApprox(PATH, "approx.userModule1", expectedEffectBound);
     }
 
     @Test
     public void capabilityPassedIntoMethodPureModule() throws ParseException {
         Set<Effect> expectedEffectBound = makeEffectSet("log");
-        TestUtil.doApproxScript(PATH, "approx.userModule2", expectedEffectBound);
+        TestUtil.doApprox(PATH, "approx.userModule2", expectedEffectBound);
     }
 
     @Test
     public void capabilityExposed() throws ParseException {
         Set<Effect> expectedEffectBound = makeEffectSet("write", "log");
-        TestUtil.doApproxScript(PATH, "approx.userModule3", expectedEffectBound);
+        TestUtil.doApprox(PATH, "approx.userModule3", expectedEffectBound);
     }
 
     @Test
     public void importNewEffect() throws ParseException {
         Set<Effect> expectedEffectBound = makeEffectSet("write");
-        TestUtil.doApproxScript(PATH, "approx.userModule4", expectedEffectBound);
+        TestUtil.doApprox(PATH, "approx.userModule4", expectedEffectBound);
     }
 
     @Test
     public void effectVarTypeMembers() throws ParseException {
         Set<Effect> expectedEffectBound = makeEffectSet("write");
-        TestUtil.doApproxScript(PATH, "approx.userModule5", expectedEffectBound);
+        TestUtil.doApprox(PATH, "approx.userModule5", expectedEffectBound);
     }
 
     @Test
     public void globallyAvailableEffectPureModule() throws ParseException {
         Set<Effect> expectedEffectBound = makeEffectSet();
-        TestUtil.doApproxScript(PATH, "approx.userModule6", expectedEffectBound);
+        TestUtil.doApprox(PATH, "approx.userModule6", expectedEffectBound);
     }
 
     @Test
     public void globallyAvailableEffectResourceModule() throws ParseException {
         Set<Effect> expectedEffectBound = makeEffectSet("write");
-        TestUtil.doApproxScript(PATH, "approx.userModule7", expectedEffectBound);
+        TestUtil.doApprox(PATH, "approx.userModule7", expectedEffectBound);
     }
 
     @Test
     public void nonEmptyGloballyAvailableEffectPureModule() throws ParseException {
         Set<Effect> expectedEffectBound = makeEffectSet();
-        TestUtil.doApproxScript(PATH, "approx.userModule8", expectedEffectBound);
+        TestUtil.doApprox(PATH, "approx.userModule8", expectedEffectBound);
     }
 }

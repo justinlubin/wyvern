@@ -253,7 +253,7 @@ public final class TestUtil {
         TestUtil.doChecks(program, expectedType, expectedValue);
     }
 
-    public static void doApproxScript(String searchPath, String qualifiedName, Set<Effect> expectedEffectBound) throws ParseException {
+    public static void doApprox(String searchPath, String qualifiedName, Set<Effect> expectedEffectBound) throws ParseException {
         InterpreterState state = new InterpreterState(InterpreterState.PLATFORM_JAVA, new File(searchPath), new File(LIB_PATH));
         final Module module = state.getResolver().resolveModule(qualifiedName, true);
         Set<Effect> effectBound = EffectApproximationVisitor.approx(module);
