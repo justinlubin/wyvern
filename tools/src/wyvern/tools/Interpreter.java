@@ -4,15 +4,19 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Set;
 
 import wyvern.stdlib.Globals;
 import wyvern.target.corewyvernIL.ASTNode;
+import wyvern.target.corewyvernIL.astvisitor.EffectApproximationVisitor;
 import wyvern.target.corewyvernIL.astvisitor.PlatformSpecializationVisitor;
 import wyvern.target.corewyvernIL.astvisitor.TailCallVisitor;
+import wyvern.target.corewyvernIL.effects.Effect;
 import wyvern.target.corewyvernIL.expression.IExpr;
 import wyvern.target.corewyvernIL.modules.Module;
 import wyvern.target.corewyvernIL.support.InterpreterState;
 import wyvern.target.corewyvernIL.support.TypeContext;
+import wyvern.target.corewyvernIL.type.ValueType;
 import wyvern.tools.errors.ToolError;
 
 public final class Interpreter {
@@ -67,9 +71,19 @@ public final class Interpreter {
             /*ExpressionAST ast = (ExpressionAST) TestUtil.getNewAST(filepath.toFile());
             GenContext genCtx = Globals.getGenContext(state);
             Expression program = ast.generateIL(genCtx, null);*/
+
             TypeContext ctx = Globals.getStandardTypeContext();
-            program.typecheckNoAvoidance(ctx, null);
+            ValueType ty = program.typecheckNoAvoidance(ctx, null);
+
             TailCallVisitor.annotate(program);
+
+            Set<Effect> effectBound = EffectApproximationVisitor.approx(m);
+            System.out.println("Effect bound: {");
+            for (Effect e : effectBound) {
+                System.out.println(e);
+            }
+            System.out.println("}");
+
             program.interpret(Globals.getStandardEvalContext());
         /*} catch (ParseException e) {
             System.err.println("Parse error: " + e.getMessage());*/

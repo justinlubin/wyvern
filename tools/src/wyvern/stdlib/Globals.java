@@ -136,6 +136,7 @@ public final class Globals {
             return state.getGenContext();
         }
         // Additional primitives should also be added to primitive list in MethodCall.java bytecode generation
+        // as well as EffectApproximatorVisitor.java
         GenContext genCtx = new EmptyGenContext(state).extend(system, new Variable(system), Globals.getSystemType());
         genCtx = new TypeOrEffectGenContext("Int", system, genCtx);
         genCtx = new TypeOrEffectGenContext("Float", system, genCtx);
