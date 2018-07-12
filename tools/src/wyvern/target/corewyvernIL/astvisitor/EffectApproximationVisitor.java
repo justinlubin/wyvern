@@ -18,7 +18,6 @@ public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationSt
     public static Set<Effect> approx(Module m) {
         EffectApproximationVisitor visitor = new EffectApproximationVisitor();
         EffectApproximationState state = new EffectApproximationState(m.getDependencies());
-        System.out.println(m.getDependencies().get(0).getType());
         return m.getExpression().getType().acceptVisitor(visitor, state);
     }
 

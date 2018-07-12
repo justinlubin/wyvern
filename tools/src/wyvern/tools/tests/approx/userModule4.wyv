@@ -1,0 +1,9 @@
+module def userModule4(file : approx.File)
+
+// Importing an object, not a type
+import approx.logger
+
+def id(x : String) : String
+  val myLogger = logger(file)
+  myLogger.update(x)
+  x

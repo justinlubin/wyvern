@@ -1,0 +1,3 @@
+type Lib8
+  effect myEffect
+  def foo(x : String) : {myEffect} String

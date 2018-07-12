@@ -1,0 +1,6 @@
+module lib6 : approx.Lib6
+
+effect myEffect = {}
+
+def foo(x : String) : {myEffect} String
+  x

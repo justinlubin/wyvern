@@ -1,0 +1,5 @@
+import approx.File
+
+resource type LoggerExposed
+  effect log
+  def update(s : String) : {log} File

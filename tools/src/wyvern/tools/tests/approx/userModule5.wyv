@@ -1,0 +1,4 @@
+module def userModule5(lib : approx.Lib5)
+
+def id(x : String) : String
+  x

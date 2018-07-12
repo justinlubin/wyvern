@@ -1,0 +1,6 @@
+module def file(java : Java) : approx.File
+
+effect write = {java.ffiEffect}
+
+def append(filename : String, contents : String) : {write} Unit
+  unit

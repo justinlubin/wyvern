@@ -1,0 +1,3 @@
+type Lib6
+  effect myEffect
+  def foo(x : String) : {myEffect} String

@@ -5,15 +5,20 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 
 import wyvern.stdlib.Globals;
 import wyvern.target.corewyvernIL.ASTNode;
+import wyvern.target.corewyvernIL.astvisitor.EffectApproximationVisitor;
 import wyvern.target.corewyvernIL.astvisitor.PlatformSpecializationVisitor;
 import wyvern.target.corewyvernIL.astvisitor.TailCallVisitor;
 import wyvern.target.corewyvernIL.decl.DefDeclaration;
+import wyvern.target.corewyvernIL.effects.Effect;
 import wyvern.target.corewyvernIL.expression.FieldGet;
 import wyvern.target.corewyvernIL.expression.IExpr;
 import wyvern.target.corewyvernIL.expression.IntegerLiteral;
@@ -246,6 +251,19 @@ public final class TestUtil {
         IExpr program = state.getResolver().wrap(module.getExpression(), module.getDependencies());
         program = (IExpr) PlatformSpecializationVisitor.specializeAST((ASTNode) program, "java", Globals.getGenContext(state));
         TestUtil.doChecks(program, expectedType, expectedValue);
+    }
+
+    public static void doApproxScript(String searchPath, String qualifiedName, Set<Effect> expectedEffectBound) throws ParseException {
+        InterpreterState state = new InterpreterState(InterpreterState.PLATFORM_JAVA, new File(searchPath), new File(LIB_PATH));
+        final Module module = state.getResolver().resolveModule(qualifiedName, true);
+        Set<Effect> effectBound = EffectApproximationVisitor.approx(module);
+        IExpr program = state.getResolver().wrap(module.getExpression(), module.getDependencies());
+        program = (IExpr) PlatformSpecializationVisitor.specializeAST((ASTNode) program, "java", Globals.getGenContext(state));
+        TestUtil.doChecks(program, null, null);
+        Assert.assertEquals(
+                expectedEffectBound.stream().map(Effect::getName).collect(Collectors.toSet()),
+                effectBound.stream().map(Effect::getName).collect(Collectors.toSet())
+                );
     }
 
     public static void doChecks(IExpr program, ValueType expectedType, Value expectedValue) {

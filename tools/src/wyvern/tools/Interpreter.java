@@ -73,16 +73,17 @@ public final class Interpreter {
             Expression program = ast.generateIL(genCtx, null);*/
 
             TypeContext ctx = Globals.getStandardTypeContext();
-            ValueType ty = program.typecheckNoAvoidance(ctx, null);
+            program.typecheckNoAvoidance(ctx, null);
 
             TailCallVisitor.annotate(program);
 
-            Set<Effect> effectBound = EffectApproximationVisitor.approx(m);
-            System.out.println("Effect bound: {");
-            for (Effect e : effectBound) {
-                System.out.println(e);
-            }
-            System.out.println("}");
+            // For printing the effects of a program
+//            Set<Effect> effectBound = EffectApproximationVisitor.approx(m);
+//            System.out.println("Effect bound: {");
+//            for (Effect e : effectBound) {
+//                System.out.println(e);
+//            }
+//            System.out.println("}");
 
             program.interpret(Globals.getStandardEvalContext());
         /*} catch (ParseException e) {

@@ -1,0 +1,7 @@
+import approx.File
+
+resource type Lib5
+  val myFile : File
+  effect myEffect
+  type T
+    def foo(x : Int) : {myEffect} Int
