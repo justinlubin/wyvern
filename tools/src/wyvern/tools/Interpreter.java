@@ -1,22 +1,19 @@
 package wyvern.tools;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Set;
-
 import wyvern.stdlib.Globals;
 import wyvern.target.corewyvernIL.ASTNode;
-import wyvern.target.corewyvernIL.astvisitor.EffectApproximationVisitor;
 import wyvern.target.corewyvernIL.astvisitor.PlatformSpecializationVisitor;
 import wyvern.target.corewyvernIL.astvisitor.TailCallVisitor;
-import wyvern.target.corewyvernIL.effects.Effect;
 import wyvern.target.corewyvernIL.expression.IExpr;
 import wyvern.target.corewyvernIL.modules.Module;
 import wyvern.target.corewyvernIL.support.InterpreterState;
 import wyvern.target.corewyvernIL.support.TypeContext;
 import wyvern.tools.errors.ToolError;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public final class Interpreter {
     private Interpreter() { }

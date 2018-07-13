@@ -2,8 +2,6 @@ package wyvern.target.corewyvernIL.astvisitor;
 
 import wyvern.target.corewyvernIL.decltype.DeclType;
 import wyvern.target.corewyvernIL.decltype.DeclTypeWithResult;
-import wyvern.target.corewyvernIL.expression.IExpr;
-import wyvern.target.corewyvernIL.expression.Path;
 import wyvern.target.corewyvernIL.expression.Variable;
 import wyvern.target.corewyvernIL.modules.Module;
 import wyvern.target.corewyvernIL.modules.TypedModuleSpec;
@@ -12,7 +10,6 @@ import wyvern.target.corewyvernIL.support.TypeContext;
 import wyvern.target.corewyvernIL.type.NominalType;
 import wyvern.target.corewyvernIL.type.StructuralType;
 import wyvern.target.corewyvernIL.type.ValueType;
-import wyvern.tools.errors.ToolError;
 
 import java.util.HashMap;
 import java.util.List;
