@@ -1,0 +1,7 @@
+require effectApproximation.file
+
+import effectApproximation.userModule4
+
+val userModule4 = userModule4(file)
+
+userModule4.id("a")

@@ -1,4 +1,4 @@
-import approx.File
+import effectApproximation.File
 
 resource type Lib5
   val myFile : File

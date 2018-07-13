@@ -1,0 +1,5 @@
+module def userModule1(logger : effectApproximation.Logger)
+
+def id(x : String) : String
+  logger.update(x)
+  x

@@ -1,7 +1,0 @@
-module def logger(file : approx.File) : LoggerExposed
-
-effect log = {file.write}
-
-def update(s : String) : {log} File
-  file.append(“log.txt”, s)
-  file

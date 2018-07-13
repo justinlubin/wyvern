@@ -1,7 +1,7 @@
-module def userModule4(file : approx.File)
+module def userModule4(file : effectApproximation.File)
 
 // Importing an object, not a type
-import approx.logger
+import effectApproximation.logger
 
 def id(x : String) : String
   val myLogger = logger(file)

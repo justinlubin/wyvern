@@ -1,6 +1,6 @@
 module userModule6
 
-import approx.lib6
+import effectApproximation.lib6
 
 def run(x : String) : String
   lib6.foo(x)

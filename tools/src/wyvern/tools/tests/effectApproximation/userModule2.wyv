@@ -1,6 +1,6 @@
 module userModule2
 
-import approx.Logger
+import effectApproximation.Logger
 
 def id(logger : Logger, x : String) : String
   logger.update(x)

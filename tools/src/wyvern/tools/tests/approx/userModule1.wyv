@@ -1,5 +1,0 @@
-module def userModule1(logger : approx.Logger)
-
-def id(x : String) : String
-  logger.update(x)
-  x

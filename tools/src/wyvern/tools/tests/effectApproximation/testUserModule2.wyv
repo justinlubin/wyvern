@@ -1,0 +1,8 @@
+require effectApproximation.file
+
+import effectApproximation.logger
+import effectApproximation.userModule2
+
+val logger = logger(file)
+
+userModule2.id(logger, "a")

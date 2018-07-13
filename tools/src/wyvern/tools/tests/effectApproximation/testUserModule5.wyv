@@ -1,0 +1,7 @@
+require effectApproximation.lib5
+
+import effectApproximation.userModule5
+
+val userModule5 = userModule5(lib5)
+
+userModule5.id("a")

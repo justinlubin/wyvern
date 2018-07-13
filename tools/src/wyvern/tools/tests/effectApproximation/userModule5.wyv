@@ -1,0 +1,4 @@
+module def userModule5(lib : effectApproximation.Lib5)
+
+def id(x : String) : String
+  x

@@ -1,4 +1,4 @@
-module lib6 : approx.Lib6
+module lib6 : effectApproximation.Lib6
 
 effect myEffect = {}
 

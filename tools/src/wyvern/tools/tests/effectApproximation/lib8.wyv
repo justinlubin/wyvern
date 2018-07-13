@@ -1,4 +1,4 @@
-module lib8 : approx.Lib8
+module lib8 : effectApproximation.Lib8
 
 effect myEffect = {system.ffiEffect}
 

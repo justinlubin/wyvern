@@ -1,0 +1,7 @@
+require effectApproximation.file
+
+import effectApproximation.userModule7
+
+val userModule7 = userModule7(file)
+
+userModule7.run("a")

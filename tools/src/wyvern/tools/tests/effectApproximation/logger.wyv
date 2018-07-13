@@ -1,4 +1,4 @@
-module def logger(file : approx.File) : approx.Logger
+module def logger(file : effectApproximation.File) : effectApproximation.Logger
 
 effect log = {file.write}
 

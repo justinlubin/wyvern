@@ -1,6 +1,0 @@
-module def userModule7(file : approx.File)
-
-import approx.lib6
-
-def run(x : String) : String
-  lib6.foo(x)

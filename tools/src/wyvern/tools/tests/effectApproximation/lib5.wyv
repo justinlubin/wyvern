@@ -1,0 +1,11 @@
+module def lib5(java : Java) : effectApproximation.Lib5
+
+import effectApproximation.File
+import effectApproximation.file
+
+val myFile : File = file(java)
+
+effect myEffect = {system.ffiEffect}
+
+type T
+  def foo(x : Int) : {myEffect} Int
