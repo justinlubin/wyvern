@@ -127,7 +127,7 @@ public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationVi
     // return false for resource modules (even if they are actually annotated).
     private static boolean isAnnotated(ValueType t) {
         if (!(t instanceof StructuralType)) {
-            return true;
+            return false;
         }
         List<DeclType> decls = ((StructuralType) t).getDeclTypes();
         for (DeclType decl : decls) {
