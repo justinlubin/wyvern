@@ -33,14 +33,32 @@ public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationSt
         return approxModule(visitor, state, module);
     }
 
+    // Rule: annotated
+
+    // Note: resource modules get translated into an object with an *unannotated* apply method, so this method will
+    // return false for resource modules (even if they are actually annotated).
+    private static boolean isAnnotated(ValueType t) {
+        if (!(t instanceof StructuralType)) {
+            return true;
+        }
+        List<DeclType> decls = ((StructuralType) t).getDeclTypes();
+        for (DeclType decl : decls) {
+            if (!(decl instanceof DefDeclType)) {
+                continue;
+            }
+            EffectSet effectSet = ((DefDeclType) decl).getEffectSet();
+            if (effectSet == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     // Rule: imports
 
     private static Set<Variable> importsFromSeqExpr(SeqExpr seqExpr) {
         Set<Variable> result = new HashSet<>();
-        List<HasLocation> elements = seqExpr.getElements();
-        int finalIndex = elements.size() - 1; // All but last element
-        for (int i = 0; i < finalIndex; i++) {
-            HasLocation element = elements.get(i);
+        for (HasLocation element : seqExpr.getElements()) {
             if (!(element instanceof VarBinding)) {
                 continue;
             }
@@ -83,14 +101,20 @@ public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationSt
     // Rule: approx
 
     private static Set<Effect> approxModule(EffectApproximationVisitor visitor, EffectApproximationState state, Module module) {
-        // TODO Check if annotated here
+        Expression expression = module.getExpression();
+        ValueType type = expression.getType();
 
         Set<Effect> result = new HashSet<>();
-        Set<Variable> programImports = imports(module.getExpression());
-        for (Variable programImport : programImports) {
-            result.addAll(approxModule(visitor, state, state.resolveModule(programImport)));
+
+        if (!isAnnotated(type)) {
+            // Check the imports
+            Set<Variable> programImports = imports(module.getExpression());
+            for (Variable programImport : programImports) {
+                result.addAll(approxModule(visitor, state, state.resolveModule(programImport)));
+            }
         }
-        result.addAll(module.getExpression().getType().acceptVisitor(visitor, state));
+
+        result.addAll(type.acceptVisitor(visitor, state));
         return result;
     }
 
