@@ -19,6 +19,22 @@ import java.util.List;
 import java.util.Set;
 
 public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationState, Set<Effect>> {
+    // Entry point
+
+    public static Set<Effect> approximateEffectBound(ModuleResolver moduleResolver, Module module) {
+        EffectApproximationVisitor visitor =
+                new EffectApproximationVisitor();
+        EffectApproximationState state =
+                new EffectApproximationState(
+                        moduleResolver,
+                        Globals.getStandardTypeContext(),
+                        module.getDependencies()
+                );
+        return approxModule(visitor, state, module);
+    }
+
+    // Rule: imports
+
     private static Set<Variable> importsFromSeqExpr(SeqExpr seqExpr) {
         Set<Variable> result = new HashSet<>();
         List<HasLocation> elements = seqExpr.getElements();
@@ -64,19 +80,7 @@ public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationSt
         }
     }
 
-    public static Set<Effect> approximateEffectBound(ModuleResolver moduleResolver, Module module) {
-        EffectApproximationVisitor visitor =
-                new EffectApproximationVisitor();
-        EffectApproximationState state =
-                new EffectApproximationState(
-                        moduleResolver,
-                        Globals.getStandardTypeContext(),
-                        module.getDependencies()
-                );
-        return approxModule(visitor, state, module);
-    }
-
-    // approx
+    // Rule: approx
 
     private static Set<Effect> approxModule(EffectApproximationVisitor visitor, EffectApproximationState state, Module module) {
         // TODO Check if annotated here
@@ -109,7 +113,7 @@ public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationSt
             ValueType vt = nominalType.getCanonicalType(state.getCachedStandardContext());
             if (vt != nominalType) {
                 // Found in prelude
-                return new HashSet<>(); // TODO; java has effects, for example
+                return new HashSet<>(); // TODO java has effects, for example
             } else {
                 // Not found
                 throw new RuntimeException("Cannot find nominal type " + nominalType);
@@ -117,27 +121,7 @@ public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationSt
         }
     }
 
-    @Override
-    public Set<Effect> visit(EffectApproximationState state, ExtensibleTagType extensibleTagType) {
-        throw new RuntimeException("EffectApproximationVisitor should not visit ExtensibleTagType");
-    }
-
-    @Override
-    public Set<Effect> visit(EffectApproximationState state, DataType dataType) {
-        throw new RuntimeException("EffectApproximationVisitor should not visit DataType");
-    }
-
-    @Override
-    public Set<Effect> visit(EffectApproximationState state, ValueType valueType) {
-        throw new RuntimeException("EffectApproximationVisitor should not visit ValueType");
-    }
-
-    @Override
-    public Set<Effect> visit(EffectApproximationState state, RefinementType refinementType) {
-        throw new RuntimeException("EffectApproximationVisitor should not visit RefinementType");
-    }
-
-    // approxDecl
+    // Rule: approxDecl
 
     @Override
     public Set<Effect> visit(EffectApproximationState state, AbstractTypeMember abstractTypeMember) {
@@ -182,6 +166,26 @@ public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationSt
     }
 
     // End algorithm
+
+    @Override
+    public Set<Effect> visit(EffectApproximationState state, ExtensibleTagType extensibleTagType) {
+        throw new RuntimeException("EffectApproximationVisitor should not visit ExtensibleTagType");
+    }
+
+    @Override
+    public Set<Effect> visit(EffectApproximationState state, DataType dataType) {
+        throw new RuntimeException("EffectApproximationVisitor should not visit DataType");
+    }
+
+    @Override
+    public Set<Effect> visit(EffectApproximationState state, ValueType valueType) {
+        throw new RuntimeException("EffectApproximationVisitor should not visit ValueType");
+    }
+
+    @Override
+    public Set<Effect> visit(EffectApproximationState state, RefinementType refinementType) {
+        throw new RuntimeException("EffectApproximationVisitor should not visit RefinementType");
+    }
 
     @Override
     public Set<Effect> visit(EffectApproximationState state, New newExpr) {
