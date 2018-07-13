@@ -15,6 +15,7 @@ import wyvern.target.corewyvernIL.decl.VarDeclaration;
 import wyvern.target.corewyvernIL.decltype.AbstractTypeMember;
 import wyvern.target.corewyvernIL.decltype.ConcreteTypeMember;
 import wyvern.target.corewyvernIL.decltype.DeclType;
+import wyvern.target.corewyvernIL.decltype.DeclTypeWithResult;
 import wyvern.target.corewyvernIL.decltype.DefDeclType;
 import wyvern.target.corewyvernIL.decltype.EffectDeclType;
 import wyvern.target.corewyvernIL.decltype.ValDeclType;
@@ -42,7 +43,9 @@ import wyvern.target.corewyvernIL.expression.SeqExpr;
 import wyvern.target.corewyvernIL.expression.StringLiteral;
 import wyvern.target.corewyvernIL.expression.Variable;
 import wyvern.target.corewyvernIL.modules.Module;
+import wyvern.target.corewyvernIL.modules.TypedModuleSpec;
 import wyvern.target.corewyvernIL.support.ModuleResolver;
+import wyvern.target.corewyvernIL.support.TypeContext;
 import wyvern.target.corewyvernIL.type.DataType;
 import wyvern.target.corewyvernIL.type.ExtensibleTagType;
 import wyvern.target.corewyvernIL.type.NominalType;
@@ -51,18 +54,66 @@ import wyvern.target.corewyvernIL.type.StructuralType;
 import wyvern.target.corewyvernIL.type.ValueType;
 import wyvern.tools.errors.HasLocation;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationState, Set<Effect>> {
+public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationVisitor.State, Set<Effect>> {
+    static class State {
+        private ModuleResolver moduleResolver;
+        private TypeContext cachedStandardContext;
+        private Map<String, ValueType> nominalTypes;
+
+        State(ModuleResolver moduleResolver, TypeContext standardContext, List<TypedModuleSpec> dependencies) {
+            this.moduleResolver = moduleResolver;
+            this.cachedStandardContext = standardContext;
+            this.nominalTypes = new HashMap<>();
+            for (TypedModuleSpec dep : dependencies) {
+                this.nominalTypes.put(dep.getDefinedTypeName(), dep.getType());
+            }
+        }
+
+        TypeContext getCachedStandardContext() {
+            return this.cachedStandardContext;
+        }
+
+        ValueType resolveNominalType(NominalType nt) {
+            String name = nt.getTypeMember();
+            ValueType wrapper = nominalTypes.get(name);
+            if (wrapper == null) {
+                return null;
+            }
+            if (!(wrapper instanceof StructuralType)) {
+                throw new RuntimeException("Cannot resolve nominal type: " + nt);
+            }
+            List<DeclType> dts = ((StructuralType) wrapper).getDeclTypes();
+            if (dts.size() != 1) {
+                throw new RuntimeException("Unexpected resolution of nominal type (length != 1): " + nt);
+            }
+            DeclType dt = dts.get(0);
+            if (!(dt instanceof DeclTypeWithResult)) {
+                throw new RuntimeException("Unexpected resolution of nominal type (not DeclTypeWithResult): " + nt);
+            }
+            return ((DeclTypeWithResult) dt).getRawResultType();
+        }
+
+        Module resolveModule(Variable v) {
+            String name = v.getName();
+            int dollarIndex = name.indexOf('$');
+            String qualifiedName = name.substring(dollarIndex + 1);
+            return this.moduleResolver.resolveModule(qualifiedName);
+        }
+    }
+
     // Entry point
 
     public static Set<Effect> approximateEffectBound(ModuleResolver moduleResolver, Module module) {
         EffectApproximationVisitor visitor =
                 new EffectApproximationVisitor();
-        EffectApproximationState state =
-                new EffectApproximationState(
+        State state =
+                new State(
                         moduleResolver,
                         Globals.getStandardTypeContext(),
                         module.getDependencies()
@@ -93,7 +144,7 @@ public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationSt
 
     // Rule: polyTy
 
-    private static Set<Effect> polyTy(EffectApproximationVisitor visitor, EffectApproximationState state, ValueType type) {
+    private static Set<Effect> polyTy(EffectApproximationVisitor visitor, State state, ValueType type) {
         if (type instanceof NominalType) {
             NominalType nt = (NominalType) type;
             if (nt.getPath() != null && nt.getPath().toString().startsWith("__generic__")) {
@@ -161,7 +212,7 @@ public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationSt
 
     // Rule: approx
 
-    private static Set<Effect> approxModule(EffectApproximationVisitor visitor, EffectApproximationState state, Module module) {
+    private static Set<Effect> approxModule(EffectApproximationVisitor visitor, State state, Module module) {
         Expression expression = module.getExpression();
         ValueType type = expression.getType();
 
@@ -180,7 +231,7 @@ public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationSt
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, StructuralType structuralType) {
+    public Set<Effect> visit(State state, StructuralType structuralType) {
         Set<Effect> result = new HashSet<>();
         for (DeclType dt : structuralType.getDeclTypes()) {
             result.addAll(dt.acceptVisitor(this, state));
@@ -189,7 +240,7 @@ public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationSt
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, NominalType nominalType) {
+    public Set<Effect> visit(State state, NominalType nominalType) {
         ValueType resolvedType = state.resolveNominalType(nominalType);
         if (resolvedType != null) {
             // Found in module dependencies
@@ -209,17 +260,17 @@ public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationSt
     // Rule: approxDecl
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, AbstractTypeMember abstractTypeMember) {
+    public Set<Effect> visit(State state, AbstractTypeMember abstractTypeMember) {
         return new HashSet<>();
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, ConcreteTypeMember concreteTypeMember) {
+    public Set<Effect> visit(State state, ConcreteTypeMember concreteTypeMember) {
         return new HashSet<>();
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, DefDeclType defDeclType) {
+    public Set<Effect> visit(State state, DefDeclType defDeclType) {
         Set<Effect> result = new HashSet<>();
         EffectSet producedEffects = defDeclType.getEffectSet();
         if (producedEffects != null) {
@@ -236,174 +287,174 @@ public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationSt
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, EffectDeclType effectDeclType) {
+    public Set<Effect> visit(State state, EffectDeclType effectDeclType) {
         return new HashSet<>();
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, ValDeclType valDeclType) {
+    public Set<Effect> visit(State state, ValDeclType valDeclType) {
         return valDeclType.getRawResultType().acceptVisitor(this, state);
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, VarDeclType varDeclType) {
+    public Set<Effect> visit(State state, VarDeclType varDeclType) {
         return varDeclType.getRawResultType().acceptVisitor(this, state);
     }
 
     // End algorithm
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, ExtensibleTagType extensibleTagType) {
+    public Set<Effect> visit(State state, ExtensibleTagType extensibleTagType) {
         throw new RuntimeException("EffectApproximationVisitor should not visit ExtensibleTagType");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, DataType dataType) {
+    public Set<Effect> visit(State state, DataType dataType) {
         throw new RuntimeException("EffectApproximationVisitor should not visit DataType");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, ValueType valueType) {
+    public Set<Effect> visit(State state, ValueType valueType) {
         throw new RuntimeException("EffectApproximationVisitor should not visit ValueType");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, RefinementType refinementType) {
+    public Set<Effect> visit(State state, RefinementType refinementType) {
         throw new RuntimeException("EffectApproximationVisitor should not visit RefinementType");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, New newExpr) {
+    public Set<Effect> visit(State state, New newExpr) {
         throw new RuntimeException("EffectApproximationVisitor should not visit New");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, Case c) {
+    public Set<Effect> visit(State state, Case c) {
         throw new RuntimeException("EffectApproximationVisitor should not visit Case");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, MethodCall methodCall) {
+    public Set<Effect> visit(State state, MethodCall methodCall) {
         throw new RuntimeException("EffectApproximationVisitor should not visit MethodCall");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, Match match) {
+    public Set<Effect> visit(State state, Match match) {
         throw new RuntimeException("EffectApproximationVisitor should not visit Match");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, FieldGet fieldGet) {
+    public Set<Effect> visit(State state, FieldGet fieldGet) {
         throw new RuntimeException("EffectApproximationVisitor should not visit FieldGet");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, Let let) {
+    public Set<Effect> visit(State state, Let let) {
         throw new RuntimeException("EffectApproximationVisitor should not visit Let");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, Bind bind) {
+    public Set<Effect> visit(State state, Bind bind) {
         throw new RuntimeException("EffectApproximationVisitor should not visit Bind");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, FieldSet fieldSet) {
+    public Set<Effect> visit(State state, FieldSet fieldSet) {
         throw new RuntimeException("EffectApproximationVisitor should not visit FieldSet");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, Variable variable) {
+    public Set<Effect> visit(State state, Variable variable) {
         throw new RuntimeException("EffectApproximationVisitor should not visit Variable");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, Cast cast) {
+    public Set<Effect> visit(State state, Cast cast) {
         throw new RuntimeException("EffectApproximationVisitor should not visit Cast");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, VarDeclaration varDecl) {
+    public Set<Effect> visit(State state, VarDeclaration varDecl) {
         throw new RuntimeException("EffectApproximationVisitor should not visit VarDeclaration");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, DefDeclaration defDecl) {
+    public Set<Effect> visit(State state, DefDeclaration defDecl) {
         throw new RuntimeException("EffectApproximationVisitor should not visit DefDeclaration");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, ValDeclaration valDecl) {
+    public Set<Effect> visit(State state, ValDeclaration valDecl) {
         throw new RuntimeException("EffectApproximationVisitor should not visit ValDeclaration");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, ModuleDeclaration moduleDecl) {
+    public Set<Effect> visit(State state, ModuleDeclaration moduleDecl) {
         throw new RuntimeException("EffectApproximationVisitor should not visit ModuleDeclaration");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, IntegerLiteral integerLiteral) {
+    public Set<Effect> visit(State state, IntegerLiteral integerLiteral) {
         throw new RuntimeException("EffectApproximationVisitor should not visit IntegerLiteral");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, BooleanLiteral booleanLiteral) {
+    public Set<Effect> visit(State state, BooleanLiteral booleanLiteral) {
         throw new RuntimeException("EffectApproximationVisitor should not visit BooleanLiteral");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, RationalLiteral rational) {
+    public Set<Effect> visit(State state, RationalLiteral rational) {
         throw new RuntimeException("EffectApproximationVisitor should not visit RationalLiteral");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, FormalArg formalArg) {
+    public Set<Effect> visit(State state, FormalArg formalArg) {
         throw new RuntimeException("EffectApproximationVisitor should not visit FormalArg");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, StringLiteral stringLiteral) {
+    public Set<Effect> visit(State state, StringLiteral stringLiteral) {
         throw new RuntimeException("EffectApproximationVisitor should not visit StringLiteral");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, CharacterLiteral characterLiteral) {
+    public Set<Effect> visit(State state, CharacterLiteral characterLiteral) {
         throw new RuntimeException("EffectApproximationVisitor should not visit CharacterLiteral");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, DelegateDeclaration delegateDecl) {
+    public Set<Effect> visit(State state, DelegateDeclaration delegateDecl) {
         throw new RuntimeException("EffectApproximationVisitor should not visit DelegateDeclaration");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, TypeDeclaration typeDecl) {
+    public Set<Effect> visit(State state, TypeDeclaration typeDecl) {
         throw new RuntimeException("EffectApproximationVisitor should not visit TypeDeclaration");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, FFIImport ffiImport) {
+    public Set<Effect> visit(State state, FFIImport ffiImport) {
         throw new RuntimeException("EffectApproximationVisitor should not visit FFIImport");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, FFI ffi) {
+    public Set<Effect> visit(State state, FFI ffi) {
         throw new RuntimeException("EffectApproximationVisitor should not visit FFI");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, EffectDeclaration effectDeclaration) {
+    public Set<Effect> visit(State state, EffectDeclaration effectDeclaration) {
         throw new RuntimeException("EffectApproximationVisitor should not visit EffectDeclaration");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, SeqExpr seqExpr) {
+    public Set<Effect> visit(State state, SeqExpr seqExpr) {
         throw new RuntimeException("EffectApproximationVisitor should not visit SeqExpr");
     }
 
     @Override
-    public Set<Effect> visit(EffectApproximationState state, FloatLiteral flt) {
+    public Set<Effect> visit(State state, FloatLiteral flt) {
         throw new RuntimeException("EffectApproximationVisitor should not visit FloatLiteral");
     }
 }
