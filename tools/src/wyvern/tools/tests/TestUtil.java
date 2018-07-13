@@ -252,7 +252,7 @@ public final class TestUtil {
         TestUtil.doChecks(program, expectedType, expectedValue);
     }
 
-    public static void doApprox(String searchPath, String qualifiedName, Set<Effect> expectedEffectBound) throws ParseException {
+    public static void doEffectApproximation(String searchPath, String qualifiedName, Set<Effect> expectedEffectBound) throws ParseException {
         InterpreterState state = new InterpreterState(InterpreterState.PLATFORM_JAVA, new File(searchPath), new File(LIB_PATH));
         final Module module = state.getResolver().resolveModule(qualifiedName, true);
         Set<Effect> effectBound = EffectApproximationVisitor.approximateEffectBound(state.getResolver(), module);
@@ -262,7 +262,7 @@ public final class TestUtil {
         Assert.assertEquals(
                 expectedEffectBound.stream().map(Effect::getName).collect(Collectors.toSet()),
                 effectBound.stream().map(Effect::getName).collect(Collectors.toSet())
-                );
+        );
     }
 
     public static void doChecks(IExpr program, ValueType expectedType, Value expectedValue) {

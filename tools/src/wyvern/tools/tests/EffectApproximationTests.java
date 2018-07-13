@@ -40,7 +40,7 @@ public class EffectApproximationTests {
                 new StringLiteral("a")
         );
         Set<Effect> expectedEffectBound = makeEffectSet("log");
-        TestUtil.doApprox(PATH, "effectApproximation.userModule1", expectedEffectBound);
+        TestUtil.doEffectApproximation(PATH, "effectApproximation.userModule1", expectedEffectBound);
     }
 
     @Test
@@ -52,7 +52,7 @@ public class EffectApproximationTests {
                 new StringLiteral("a")
         );
         Set<Effect> expectedEffectBound = makeEffectSet("log");
-        TestUtil.doApprox(PATH, "effectApproximation.userModule2", expectedEffectBound);
+        TestUtil.doEffectApproximation(PATH, "effectApproximation.userModule2", expectedEffectBound);
     }
 
     @Test
@@ -64,7 +64,7 @@ public class EffectApproximationTests {
                 new StringLiteral("a")
         );
         Set<Effect> expectedEffectBound = makeEffectSet("write", "log");
-        TestUtil.doApprox(PATH, "effectApproximation.userModule3", expectedEffectBound);
+        TestUtil.doEffectApproximation(PATH, "effectApproximation.userModule3", expectedEffectBound);
     }
 
     @Test
@@ -76,7 +76,7 @@ public class EffectApproximationTests {
                 new StringLiteral("a")
         );
         Set<Effect> expectedEffectBound = makeEffectSet("write", "log");
-        TestUtil.doApprox(PATH, "effectApproximation.userModule4", expectedEffectBound);
+        TestUtil.doEffectApproximation(PATH, "effectApproximation.userModule4", expectedEffectBound);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class EffectApproximationTests {
                 new StringLiteral("a")
         );
         Set<Effect> expectedEffectBound = makeEffectSet("write");
-        TestUtil.doApprox(PATH, "effectApproximation.userModule5", expectedEffectBound);
+        TestUtil.doEffectApproximation(PATH, "effectApproximation.userModule5", expectedEffectBound);
     }
 
     @Test
@@ -100,7 +100,7 @@ public class EffectApproximationTests {
                 new StringLiteral("a")
         );
         Set<Effect> expectedEffectBound = makeEffectSet("myEffect");
-        TestUtil.doApprox(PATH, "effectApproximation.userModule6", expectedEffectBound);
+        TestUtil.doEffectApproximation(PATH, "effectApproximation.userModule6", expectedEffectBound);
     }
 
     @Test
@@ -112,7 +112,7 @@ public class EffectApproximationTests {
                 new StringLiteral("a")
         );
         Set<Effect> expectedEffectBound = makeEffectSet("write", "myEffect");
-        TestUtil.doApprox(PATH, "effectApproximation.userModule7", expectedEffectBound);
+        TestUtil.doEffectApproximation(PATH, "effectApproximation.userModule7", expectedEffectBound);
     }
 
     @Test
@@ -124,6 +124,6 @@ public class EffectApproximationTests {
                 new StringLiteral("a")
         );
         Set<Effect> expectedEffectBound = makeEffectSet("myEffect");
-        TestUtil.doApprox(PATH, "effectApproximation.userModule8", expectedEffectBound);
+        TestUtil.doEffectApproximation(PATH, "effectApproximation.userModule8", expectedEffectBound);
     }
 }
