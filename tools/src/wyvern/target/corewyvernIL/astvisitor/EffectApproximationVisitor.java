@@ -54,6 +54,30 @@ public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationSt
         return true;
     }
 
+    // Rule: polyTy
+
+    private static Set<Effect> polyTy(EffectApproximationVisitor visitor, EffectApproximationState state, ValueType type) {
+        if (type instanceof NominalType) {
+            NominalType nt = (NominalType) type;
+            if (nt.getPath() != null && nt.getPath().toString().startsWith("__generic__")) {
+                return new HashSet<>();
+            }
+        }
+        return type.acceptVisitor(visitor, state);
+    }
+
+    // Rule: polyFx
+
+    private static Set<Effect> polyFx(EffectSet effectSet) {
+        Set<Effect> result = new HashSet<>();
+        for (Effect effect : effectSet.getEffects()) {
+            if (effect.getPath() == null || !effect.getPath().toString().startsWith("__generic__")) {
+                result.add(effect);
+            }
+        }
+        return result;
+    }
+
     // Rule: imports
 
     private static Set<Variable> importsFromSeqExpr(SeqExpr seqExpr) {
@@ -68,7 +92,7 @@ public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationSt
             }
             Variable v = (Variable) body;
             String name = v.getName();
-            if (name.length() < 4 || !name.substring(0, 4).equals("MOD$")) {
+            if (!name.startsWith("MOD$")) {
                 continue;
             }
             result.add(v);
@@ -163,14 +187,14 @@ public class EffectApproximationVisitor extends ASTVisitor<EffectApproximationSt
         EffectSet producedEffects = defDeclType.getEffectSet();
         if (producedEffects != null) {
             // Annotated method
-            result.addAll(producedEffects.getEffects());
+            result.addAll(polyFx(producedEffects));
         } else {
             // Unannotated method
             for (FormalArg arg : defDeclType.getFormalArgs()) {
-                result.addAll(arg.getType().acceptVisitor(this, state));
+                result.addAll(polyTy(this, state, arg.getType()));
             }
         }
-        result.addAll(defDeclType.getRawResultType().acceptVisitor(this, state));
+        result.addAll(polyTy(this, state, defDeclType.getRawResultType()));
         return result;
     }
 
