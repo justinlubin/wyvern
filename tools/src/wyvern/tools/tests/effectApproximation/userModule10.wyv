@@ -1,0 +1,7 @@
+module userModule10
+
+val myObject = new
+  effect myEffect = {system.ffiEffect}
+
+def foo(a : String) : {myObject.myEffect} String
+  a

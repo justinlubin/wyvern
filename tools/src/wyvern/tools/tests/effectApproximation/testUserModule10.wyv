@@ -1,0 +1,3 @@
+import effectApproximation.userModule10
+
+userModule10.foo("a")

@@ -1,0 +1,5 @@
+module lib9
+
+val x = new
+  effect e = {system.ffiEffect}
+  def foo(u : String) : {e} String = u

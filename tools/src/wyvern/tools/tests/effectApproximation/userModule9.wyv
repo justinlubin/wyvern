@@ -1,0 +1,8 @@
+module userModule9
+
+import effectApproximation.lib9
+
+val y = lib.x
+
+def bar(a : String) : {y.e} String
+  y.foo(a)

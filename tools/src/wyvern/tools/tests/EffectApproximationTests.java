@@ -3,13 +3,13 @@ package wyvern.tools.tests;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import wyvern.target.corewyvernIL.effects.Effect;
 import wyvern.target.corewyvernIL.expression.StringLiteral;
 import wyvern.target.corewyvernIL.support.Util;
 import wyvern.tools.imports.extensions.WyvernResolver;
 import wyvern.tools.parsing.coreparser.ParseException;
 import wyvern.tools.tests.suites.RegressionTests;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,12 +17,22 @@ import java.util.Set;
 public class EffectApproximationTests {
     private static final String PATH = TestUtil.BASE_PATH;
 
-    private static Set<Effect> makeEffectSet(String... names) {
-        Set<Effect> effectSet = new HashSet<>();
-        for (String name : names) {
-            effectSet.add(new Effect(null, name, null));
-        }
-        return effectSet;
+    private static Set<String> effectSet(String... names) {
+        return new HashSet<>(Arrays.asList(names));
+    }
+
+    private static void test(int n, String... names) throws ParseException {
+        TestUtil.doTestScriptModularly(
+                PATH,
+                "effectApproximation.testUserModule" + n,
+                Util.stringType(),
+                new StringLiteral("a")
+        );
+        TestUtil.doEffectApproximation(
+                PATH,
+                "effectApproximation.userModule" + n,
+                effectSet(names)
+        );
     }
 
     @BeforeClass
@@ -33,97 +43,52 @@ public class EffectApproximationTests {
 
     @Test
     public void capabilityPassedIntoFunctorResourceModule() throws ParseException {
-        TestUtil.doTestScriptModularly(
-                PATH,
-                "effectApproximation.testUserModule1",
-                Util.stringType(),
-                new StringLiteral("a")
-        );
-        Set<Effect> expectedEffectBound = makeEffectSet("log");
-        TestUtil.doEffectApproximation(PATH, "effectApproximation.userModule1", expectedEffectBound);
+        test(1, "Logger.log");
     }
 
     @Test
     public void capabilityPassedIntoMethodPureModule() throws ParseException {
-        TestUtil.doTestScriptModularly(
-                PATH,
-                "effectApproximation.testUserModule2",
-                Util.stringType(),
-                new StringLiteral("a")
-        );
-        Set<Effect> expectedEffectBound = makeEffectSet("log");
-        TestUtil.doEffectApproximation(PATH, "effectApproximation.userModule2", expectedEffectBound);
+        test(2, "Logger.log");
     }
 
     @Test
     public void capabilityExposed() throws ParseException {
-        TestUtil.doTestScriptModularly(
-                PATH,
-                "effectApproximation.testUserModule3",
-                Util.stringType(),
-                new StringLiteral("a")
-        );
-        Set<Effect> expectedEffectBound = makeEffectSet("write", "log");
-        TestUtil.doEffectApproximation(PATH, "effectApproximation.userModule3", expectedEffectBound);
+        test(3, "File.write", "LoggerExposed.log");
     }
 
     @Test
     public void importNewEffect() throws ParseException {
-        TestUtil.doTestScriptModularly(
-                PATH,
-                "effectApproximation.testUserModule4",
-                Util.stringType(),
-                new StringLiteral("a")
-        );
-        Set<Effect> expectedEffectBound = makeEffectSet("write", "log");
-        TestUtil.doEffectApproximation(PATH, "effectApproximation.userModule4", expectedEffectBound);
+        test(4, "File.write", "Logger.log");
     }
 
     @Test
     public void effectVarTypeMembers() throws ParseException {
-        TestUtil.doTestScriptModularly(
-                PATH,
-                "effectApproximation.testUserModule5",
-                Util.stringType(),
-                new StringLiteral("a")
-        );
-        Set<Effect> expectedEffectBound = makeEffectSet("write");
-        TestUtil.doEffectApproximation(PATH, "effectApproximation.userModule5", expectedEffectBound);
+        test(5, "File.write");
     }
 
     @Test
     public void globallyAvailableEffectPureModule() throws ParseException {
-        TestUtil.doTestScriptModularly(
-                PATH,
-                "effectApproximation.testUserModule6",
-                Util.stringType(),
-                new StringLiteral("a")
-        );
-        Set<Effect> expectedEffectBound = makeEffectSet("myEffect");
-        TestUtil.doEffectApproximation(PATH, "effectApproximation.userModule6", expectedEffectBound);
+        test(6, "effectApproximation.lib6.myEffect");
     }
 
     @Test
     public void globallyAvailableEffectResourceModule() throws ParseException {
-        TestUtil.doTestScriptModularly(
-                PATH,
-                "effectApproximation.testUserModule7",
-                Util.stringType(),
-                new StringLiteral("a")
-        );
-        Set<Effect> expectedEffectBound = makeEffectSet("write", "myEffect");
-        TestUtil.doEffectApproximation(PATH, "effectApproximation.userModule7", expectedEffectBound);
+        test(7, "File.write", "effectApproximation.lib6.myEffect");
     }
 
     @Test
     public void nonEmptyGloballyAvailableEffectPureModule() throws ParseException {
-        TestUtil.doTestScriptModularly(
-                PATH,
-                "effectApproximation.testUserModule8",
-                Util.stringType(),
-                new StringLiteral("a")
-        );
-        Set<Effect> expectedEffectBound = makeEffectSet("myEffect");
-        TestUtil.doEffectApproximation(PATH, "effectApproximation.userModule8", expectedEffectBound);
+        test(8, "effectApproximation.lib8.myEffect");
+    }
+
+    @Test
+    public void effectDefinedInValWithMethod() throws ParseException {
+//        This example does not compile (regardless of the effect approximation)!
+//        test(9, "");
+    }
+
+    @Test
+    public void effectDefinedInVal() throws ParseException {
+        test(10, "effectApproximation.userModule10.myObject.myEffect");
     }
 }

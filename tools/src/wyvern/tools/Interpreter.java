@@ -74,10 +74,11 @@ public final class Interpreter {
             TailCallVisitor.annotate(program);
 
             // For printing the effects of a program
-//            Set<Effect> effectBound = EffectApproximationVisitor.approximateEffectBound(state.getResolver(), m);
+//            Set<TaggedEffect> effectBound = EffectApproximationVisitor.approximateEffectBound(state.getResolver(), m);
 //            System.out.println("Effect bound: {");
-//            for (Effect e : effectBound) {
-//                System.out.println("  " + e.getName());
+//            for (TaggedEffect e : effectBound) {
+//                String prefix = e.getTag().size() == 0 ? "" : e.getTag().get(0) + ".";
+//                System.out.println("  " + prefix + e.getName());
 //            }
 //            System.out.println("}");
 

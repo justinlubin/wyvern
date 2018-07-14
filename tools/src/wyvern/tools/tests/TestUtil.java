@@ -1,23 +1,13 @@
 package wyvern.tools.tests;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.nio.file.Files;
-import java.util.LinkedList;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.junit.Assert;
-
 import wyvern.stdlib.Globals;
 import wyvern.target.corewyvernIL.ASTNode;
 import wyvern.target.corewyvernIL.astvisitor.EffectApproximationVisitor;
 import wyvern.target.corewyvernIL.astvisitor.PlatformSpecializationVisitor;
 import wyvern.target.corewyvernIL.astvisitor.TailCallVisitor;
 import wyvern.target.corewyvernIL.decl.DefDeclaration;
-import wyvern.target.corewyvernIL.effects.Effect;
+import wyvern.target.corewyvernIL.effects.TaggedEffect;
 import wyvern.target.corewyvernIL.expression.FieldGet;
 import wyvern.target.corewyvernIL.expression.IExpr;
 import wyvern.target.corewyvernIL.expression.IntegerLiteral;
@@ -46,6 +36,15 @@ import wyvern.tools.typedAST.interfaces.ExpressionAST;
 import wyvern.tools.typedAST.interfaces.TypedAST;
 import wyvern.tools.types.Type;
 import wyvern.tools.util.Pair;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.nio.file.Files;
+import java.util.LinkedList;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class TestUtil {
     public static final String WYVERN_HOME = System.getenv("WYVERN_HOME");
@@ -252,16 +251,16 @@ public final class TestUtil {
         TestUtil.doChecks(program, expectedType, expectedValue);
     }
 
-    public static void doEffectApproximation(String searchPath, String qualifiedName, Set<Effect> expectedEffectBound) throws ParseException {
+    public static void doEffectApproximation(String searchPath, String qualifiedName, Set<String> expectedEffectBound) throws ParseException {
         InterpreterState state = new InterpreterState(InterpreterState.PLATFORM_JAVA, new File(searchPath), new File(LIB_PATH));
         final Module module = state.getResolver().resolveModule(qualifiedName, true);
-        Set<Effect> effectBound = EffectApproximationVisitor.approximateEffectBound(state.getResolver(), module);
+        Set<TaggedEffect> effectBound = EffectApproximationVisitor.approximateEffectBound(state.getResolver(), module);
         IExpr program = state.getResolver().wrap(module.getExpression(), module.getDependencies());
         program = (IExpr) PlatformSpecializationVisitor.specializeAST((ASTNode) program, "java", Globals.getGenContext(state));
         TestUtil.doChecks(program, null, null);
         Assert.assertEquals(
-                expectedEffectBound.stream().map(Effect::getName).collect(Collectors.toSet()),
-                effectBound.stream().map(Effect::getName).collect(Collectors.toSet())
+                expectedEffectBound,
+                effectBound.stream().map(TaggedEffect::prettyString).collect(Collectors.toSet())
         );
     }
 
