@@ -191,22 +191,22 @@ public class EffectApproximationVisitor extends ASTVisitor<State, Set<Effect>> {
     private static Set<Variable> imports(IExpr program) {
         if (program instanceof New) {
             List<Declaration> decls = ((New) program).getDecls();
-            if (decls.size() == 0) {
-                throw new RuntimeException("program has no decls: " + program);
+            if (decls.size() != 1) {
+                throw new RuntimeException("Module functor has decls.size() != 1: " + program);
             }
             Declaration firstDecl = decls.get(0);
             if (!(firstDecl instanceof DefDeclaration) || !firstDecl.getName().equals("apply")) {
-                throw new RuntimeException("program is module functor without apply method: " + program);
+                throw new RuntimeException("Module functor has no apply method: " + program);
             }
             IExpr body = ((DefDeclaration) firstDecl).getBody();
             if (!(body instanceof SeqExpr)) {
-                throw new RuntimeException("body of program's apply method is not SeqExpr: " + program);
+                throw new RuntimeException("Module functor has apply method with non-SeqExpr body: " + program);
             }
             return importsFromSeqExpr((SeqExpr) body);
         } else if (program instanceof SeqExpr) {
             return importsFromSeqExpr((SeqExpr) program);
         } else {
-            throw new RuntimeException("cannot get imports of program: " + program);
+            throw new RuntimeException("Cannot get imports of program: " + program);
         }
     }
 
