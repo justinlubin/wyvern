@@ -2,8 +2,10 @@ package wyvern.tools;
 
 import wyvern.stdlib.Globals;
 import wyvern.target.corewyvernIL.ASTNode;
+import wyvern.target.corewyvernIL.astvisitor.EffectApproximationVisitor;
 import wyvern.target.corewyvernIL.astvisitor.PlatformSpecializationVisitor;
 import wyvern.target.corewyvernIL.astvisitor.TailCallVisitor;
+import wyvern.target.corewyvernIL.effects.QualifiedEffect;
 import wyvern.target.corewyvernIL.expression.IExpr;
 import wyvern.target.corewyvernIL.modules.Module;
 import wyvern.target.corewyvernIL.support.InterpreterState;
@@ -14,6 +16,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Set;
 
 public final class Interpreter {
     private Interpreter() { }
@@ -72,16 +75,7 @@ public final class Interpreter {
             program.typecheckNoAvoidance(ctx, null);
 
             TailCallVisitor.annotate(program);
-
-            // For printing the effects of a program
-//            Set<TaggedEffect> effectBound = EffectApproximationVisitor.approximateEffectBound(state.getResolver(), m);
-//            System.out.println("Effect bound: {");
-//            for (TaggedEffect e : effectBound) {
-//                String prefix = e.getTag().size() == 0 ? "" : e.getTag().get(0) + ".";
-//                System.out.println("  " + prefix + e.getName());
-//            }
-//            System.out.println("}");
-
+            approximateEffect(state, m);
             program.interpret(Globals.getStandardEvalContext());
         /*} catch (ParseException e) {
             System.err.println("Parse error: " + e.getMessage());*/
@@ -89,6 +83,17 @@ public final class Interpreter {
             System.err.println(e.getMessage());
             System.exit(1);
         }
+    }
+
+    // For printing the effects of a program
+    private static void approximateEffect(InterpreterState state, Module m) {
+        Set<QualifiedEffect> effectBound = EffectApproximationVisitor.approximateEffectBound(state.getResolver(), m);
+        System.out.println("Effect bound: {");
+        for (QualifiedEffect e : effectBound) {
+            String prefix = e.getQualifier().size() == 0 ? "" : e.getQualifier().get(0) + ".";
+            System.out.println("  " + prefix + e.getName());
+        }
+        System.out.println("}");
     }
 
     // used to set WYVERN_HOME when called programmatically

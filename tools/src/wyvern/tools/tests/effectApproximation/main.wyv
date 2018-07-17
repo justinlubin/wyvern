@@ -1,6 +1,0 @@
-require approx.file
-import approx.userModule4
-
-val x = userModule4(file)
-
-unit

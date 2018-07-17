@@ -7,7 +7,7 @@ import wyvern.target.corewyvernIL.astvisitor.EffectApproximationVisitor;
 import wyvern.target.corewyvernIL.astvisitor.PlatformSpecializationVisitor;
 import wyvern.target.corewyvernIL.astvisitor.TailCallVisitor;
 import wyvern.target.corewyvernIL.decl.DefDeclaration;
-import wyvern.target.corewyvernIL.effects.TaggedEffect;
+import wyvern.target.corewyvernIL.effects.QualifiedEffect;
 import wyvern.target.corewyvernIL.expression.FieldGet;
 import wyvern.target.corewyvernIL.expression.IExpr;
 import wyvern.target.corewyvernIL.expression.IntegerLiteral;
@@ -254,13 +254,13 @@ public final class TestUtil {
     public static void doEffectApproximation(String searchPath, String qualifiedName, Set<String> expectedEffectBound) throws ParseException {
         InterpreterState state = new InterpreterState(InterpreterState.PLATFORM_JAVA, new File(searchPath), new File(LIB_PATH));
         final Module module = state.getResolver().resolveModule(qualifiedName, true);
-        Set<TaggedEffect> effectBound = EffectApproximationVisitor.approximateEffectBound(state.getResolver(), module);
+        Set<QualifiedEffect> effectBound = EffectApproximationVisitor.approximateEffectBound(state.getResolver(), module);
         IExpr program = state.getResolver().wrap(module.getExpression(), module.getDependencies());
         program = (IExpr) PlatformSpecializationVisitor.specializeAST((ASTNode) program, "java", Globals.getGenContext(state));
         TestUtil.doChecks(program, null, null);
         Assert.assertEquals(
                 expectedEffectBound,
-                effectBound.stream().map(TaggedEffect::prettyString).collect(Collectors.toSet())
+                effectBound.stream().map(QualifiedEffect::prettyString).collect(Collectors.toSet())
         );
     }
 

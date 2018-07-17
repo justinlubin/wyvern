@@ -7,6 +7,7 @@ import wyvern.target.corewyvernIL.expression.StringLiteral;
 import wyvern.target.corewyvernIL.support.Util;
 import wyvern.tools.imports.extensions.WyvernResolver;
 import wyvern.tools.parsing.coreparser.ParseException;
+import wyvern.tools.tests.suites.CurrentlyBroken;
 import wyvern.tools.tests.suites.RegressionTests;
 
 import java.util.Arrays;
@@ -82,9 +83,9 @@ public class EffectApproximationTests {
     }
 
     @Test
+    @Category(CurrentlyBroken.class)
     public void effectDefinedInValWithMethod() throws ParseException {
-//        This example does not compile (regardless of the effect approximation)!
-//        test(9, "");
+        test(9, "");
     }
 
     @Test

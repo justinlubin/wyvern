@@ -8,31 +8,31 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public final class TaggedEffect extends Effect {
-    private final List<String> tag;
+public final class QualifiedEffect extends Effect {
+    private final List<String> qualifier;
 
-    public static TaggedEffect fromEffect(Effect e, ArrayDeque<String> breadcrumbs) {
-        return new TaggedEffect(e.getPath(), e.getName(), e.getLocation(), breadcrumbs);
+    public static QualifiedEffect fromEffect(Effect e, ArrayDeque<String> breadcrumbs) {
+        return new QualifiedEffect(e.getPath(), e.getName(), e.getLocation(), breadcrumbs);
     }
 
-    private TaggedEffect(Path p, String n, FileLocation l, ArrayDeque<String> breadcrumbs) {
+    private QualifiedEffect(Path p, String n, FileLocation l, ArrayDeque<String> breadcrumbs) {
         super(p, n, l);
-        this.tag = new ArrayList<>(breadcrumbs);
-        Collections.reverse(this.tag);
+        this.qualifier = new ArrayList<>(breadcrumbs);
+        Collections.reverse(this.qualifier);
     }
 
-    public List<String> getTag() {
-        return this.tag;
+    public List<String> getQualifier() {
+        return this.qualifier;
     }
 
     public String prettyString() {
-        if (this.tag.size() == 0) {
+        if (this.qualifier.size() == 0) {
             return this.getName();
         }
-        StringBuilder sb = new StringBuilder(this.tag.get(0));
-        for (int i = 1; i < this.tag.size(); i++) {
+        StringBuilder sb = new StringBuilder(this.qualifier.get(0));
+        for (int i = 1; i < this.qualifier.size(); i++) {
             sb.append(".");
-            sb.append(this.tag.get(i));
+            sb.append(this.qualifier.get(i));
         }
         sb.append(".");
         sb.append(this.getName());
@@ -41,7 +41,7 @@ public final class TaggedEffect extends Effect {
 
     @Override
     public String toString() {
-        return "<" + this.tag + ">" + super.toString();
+        return "<" + this.qualifier + ">" + super.toString();
     }
 
     @Override
@@ -53,14 +53,14 @@ public final class TaggedEffect extends Effect {
             return true;
         }
 
-        if (!(obj instanceof TaggedEffect)) {
+        if (!(obj instanceof QualifiedEffect)) {
             return false;
         }
 
-        TaggedEffect teObj = (TaggedEffect) obj;
+        QualifiedEffect teObj = (QualifiedEffect) obj;
         return teObj.getName().equals(getName())
                 && teObj.getPath().equals(getPath())
-                && teObj.getTag().equals(getTag());
+                && teObj.getQualifier().equals(getQualifier());
     }
 
     @Override
@@ -69,7 +69,7 @@ public final class TaggedEffect extends Effect {
         int result = 1;
         result = prime * result + ((getName() == null) ? 0 : getName().hashCode());
         result = prime * result + ((getPath() == null) ? 0 : getPath().hashCode());
-        result = prime * result + ((getPath() == null) ? 0 : getTag().hashCode());
+        result = prime * result + ((getPath() == null) ? 0 : getQualifier().hashCode());
         return result;
     }
 }

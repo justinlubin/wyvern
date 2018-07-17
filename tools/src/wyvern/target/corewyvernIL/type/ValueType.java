@@ -170,6 +170,6 @@ public abstract class ValueType extends Type implements IASTNode {
     }
     public static final int MAX_RECURSION_DEPTH = 10;
     public Tag getTag(EvalContext ctx) {
-        throw new RuntimeError("internal error: getTag not implemented for things other than nominal types");
+        throw new RuntimeError("internal error: getQualifier not implemented for things other than nominal types");
     }
 }
