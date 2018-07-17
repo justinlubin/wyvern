@@ -2,8 +2,10 @@ package wyvern.tools;
 
 import wyvern.stdlib.Globals;
 import wyvern.target.corewyvernIL.ASTNode;
+import wyvern.target.corewyvernIL.astvisitor.EffectApproximationVisitor;
 import wyvern.target.corewyvernIL.astvisitor.PlatformSpecializationVisitor;
 import wyvern.target.corewyvernIL.astvisitor.TailCallVisitor;
+import wyvern.target.corewyvernIL.effects.TaggedEffect;
 import wyvern.target.corewyvernIL.expression.IExpr;
 import wyvern.target.corewyvernIL.modules.Module;
 import wyvern.target.corewyvernIL.support.InterpreterState;
@@ -14,6 +16,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Set;
 
 public final class Interpreter {
     private Interpreter() { }
@@ -74,13 +77,13 @@ public final class Interpreter {
             TailCallVisitor.annotate(program);
 
             // For printing the effects of a program
-//            Set<TaggedEffect> effectBound = EffectApproximationVisitor.approximateEffectBound(state.getResolver(), m);
-//            System.out.println("Effect bound: {");
-//            for (TaggedEffect e : effectBound) {
-//                String prefix = e.getTag().size() == 0 ? "" : e.getTag().get(0) + ".";
-//                System.out.println("  " + prefix + e.getName());
-//            }
-//            System.out.println("}");
+            Set<TaggedEffect> effectBound = EffectApproximationVisitor.approximateEffectBound(state.getResolver(), m);
+            System.out.println("Effect bound: {");
+            for (TaggedEffect e : effectBound) {
+                String prefix = e.getTag().size() == 0 ? "" : e.getTag().get(0) + ".";
+                System.out.println("  " + prefix + e.getName());
+            }
+            System.out.println("}");
 
             program.interpret(Globals.getStandardEvalContext());
         /*} catch (ParseException e) {

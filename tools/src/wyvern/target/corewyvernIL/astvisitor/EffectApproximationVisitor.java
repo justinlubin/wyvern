@@ -39,6 +39,7 @@ import wyvern.target.corewyvernIL.expression.Let;
 import wyvern.target.corewyvernIL.expression.Match;
 import wyvern.target.corewyvernIL.expression.MethodCall;
 import wyvern.target.corewyvernIL.expression.New;
+import wyvern.target.corewyvernIL.expression.Path;
 import wyvern.target.corewyvernIL.expression.RationalLiteral;
 import wyvern.target.corewyvernIL.expression.SeqExpr;
 import wyvern.target.corewyvernIL.expression.StringLiteral;
@@ -74,7 +75,18 @@ class State {
         this.cachedStandardContext = standardContext;
         this.nominalTypes = new HashMap<>();
         for (TypedModuleSpec dep : dependencies) {
-            this.nominalTypes.put(dep.getDefinedTypeName(), dep.getType());
+            if (dep.getDefinedTypeName() != null) {
+                // wyt file
+                this.nominalTypes.put(dep.getDefinedTypeName(), dep.getType());
+            } else {
+                // wyv file
+                ValueType type = dep.getType();
+                if (!(type instanceof StructuralType)) {
+                    throw new RuntimeException("Dependency is not structural type: " + dep);
+                }
+                String selfName = ((StructuralType) type).getSelfName();
+                this.nominalTypes.put(selfName, dep.getType());
+            }
         }
     }
 
@@ -82,9 +94,34 @@ class State {
         return this.cachedStandardContext;
     }
 
+    // Null means "not found"
     ValueType resolveNominalType(NominalType nt) {
+        Path path = nt.getPath();
         String name = nt.getTypeMember();
-        ValueType wrapper = nominalTypes.get(name);
+        ValueType wrapper;
+        if (path != null) {
+            // Need to resolve path
+            if (!(path instanceof Variable)) {
+                throw new RuntimeException("Attempt to access non-variable path type: " + nt);
+            }
+            ValueType outerWrapper = nominalTypes.get(((Variable) path).getName());
+            if (outerWrapper == null) {
+                return null;
+            }
+            if (!(outerWrapper instanceof StructuralType)) {
+                throw new RuntimeException("Could not resolve outerWrapper properly: " + nt);
+            }
+            wrapper = null;
+            for (DeclType declType : ((StructuralType) outerWrapper).getDeclTypes()) {
+                if (!(declType instanceof ConcreteTypeMember)) {
+                    continue;
+                }
+                wrapper = ((ConcreteTypeMember) declType).getRawResultType();
+            }
+        } else {
+            wrapper = nominalTypes.get(name);
+        }
+
         if (wrapper == null) {
             return null;
         }
