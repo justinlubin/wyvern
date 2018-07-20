@@ -90,8 +90,7 @@ public final class Interpreter {
         Set<QualifiedEffect> effectBound = EffectApproximationVisitor.approximateEffectBound(state.getResolver(), m);
         System.out.println("Effect bound: {");
         for (QualifiedEffect e : effectBound) {
-            String prefix = e.getQualifier().size() == 0 ? "" : e.getQualifier().get(0) + ".";
-            System.out.println("  " + prefix + e.getName());
+            System.out.println("  " + e.prettyString());
         }
         System.out.println("}");
     }

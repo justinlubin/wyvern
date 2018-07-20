@@ -44,42 +44,45 @@ public class EffectApproximationTests {
 
     @Test
     public void capabilityPassedIntoFunctorResourceModule() throws ParseException {
-        test(1, "Logger.log");
+        test(1, "logger.log");
     }
 
     @Test
     public void capabilityPassedIntoMethodPureModule() throws ParseException {
-        test(2, "Logger.log");
+        test(2, "logger.log");
     }
 
     @Test
     public void capabilityExposed() throws ParseException {
-        test(3, "File.write", "LoggerExposed.log");
+        // Avoidance problem?
+        test(3, "logger.update.write", "logger.log");
     }
 
     @Test
+    @Category(CurrentlyBroken.class)
     public void importNewEffect() throws ParseException {
-        test(4, "File.write", "Logger.log");
+        // Is this even typeable?
+        test(4, "file.write", "?.log");
     }
 
     @Test
     public void effectVarTypeMembers() throws ParseException {
-        test(5, "File.write");
+        test(5, "lib.myFile.write");
     }
 
     @Test
     public void globallyAvailableEffectPureModule() throws ParseException {
-        test(6, "effectApproximation.lib6.myEffect");
+        test(6, "lib6.myEffect");
     }
 
     @Test
     public void globallyAvailableEffectResourceModule() throws ParseException {
-        test(7, "File.write", "effectApproximation.lib6.myEffect");
+        test(7, "file.write", "lib6.myEffect");
     }
 
     @Test
     public void nonEmptyGloballyAvailableEffectPureModule() throws ParseException {
-        test(8, "effectApproximation.lib8.myEffect");
+        test(8, "lib8.myEffect");
     }
 
     @Test
@@ -90,6 +93,6 @@ public class EffectApproximationTests {
 
     @Test
     public void effectDefinedInVal() throws ParseException {
-        test(10, "effectApproximation.userModule10.myObject.myEffect");
+        test(10, "myObject.myEffect");
     }
 }

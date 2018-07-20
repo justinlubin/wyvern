@@ -63,11 +63,29 @@ import java.util.Map;
 import java.util.Set;
 
 class State {
-    private ModuleResolver moduleResolver;
-    private TypeContext cachedStandardContext;
-    private Map<String, ValueType> nominalTypes;
+    private final ModuleResolver moduleResolver;
+    private final TypeContext cachedStandardContext;
+    private final Map<String, ValueType> nominalTypes;
 
-    private ArrayDeque<String> breadcrumbs = new ArrayDeque<>();
+    private final ArrayDeque<String> breadcrumbs = new ArrayDeque<>();
+
+    // Internal constructors
+
+    private State(ModuleResolver moduleResolver,
+                  TypeContext cachedStandardContext,
+                  Map<String, ValueType> nominalTypes,
+                  ArrayDeque<String> breadcrumbs) {
+        this.moduleResolver = moduleResolver;
+        this.cachedStandardContext = cachedStandardContext;
+        this.nominalTypes = nominalTypes;
+        this.breadcrumbs.addAll(breadcrumbs);
+    }
+
+    private State copy() {
+        return new State(this.moduleResolver, this.cachedStandardContext, this.nominalTypes, this.breadcrumbs);
+    }
+
+    // External constructors
 
     State(ModuleResolver moduleResolver, TypeContext standardContext, List<TypedModuleSpec> dependencies) {
         this.moduleResolver = moduleResolver;
@@ -78,8 +96,20 @@ class State {
         }
     }
 
+    State with(String s) {
+        State copy = this.copy();
+        copy.breadcrumbs.addFirst(s);
+        return copy;
+    }
+
+    // Methods
+
     TypeContext getCachedStandardContext() {
         return this.cachedStandardContext;
+    }
+
+    ArrayDeque<String> getBreadcrumbs() {
+        return this.breadcrumbs;
     }
 
     ValueType resolveNominalType(NominalType nt) {
@@ -107,19 +137,6 @@ class State {
         int dollarIndex = name.indexOf('$');
         String qualifiedName = name.substring(dollarIndex + 1);
         return this.moduleResolver.resolveModule(qualifiedName);
-    }
-
-    void addBreadcrumb(String s) {
-        this.breadcrumbs.addFirst(s);
-    }
-
-    void resetBreadcrumbs(String s) {
-        this.breadcrumbs.clear();
-        this.breadcrumbs.addFirst(s);
-    }
-
-    ArrayDeque<String> getBreadcrumbs() {
-        return this.breadcrumbs;
     }
 }
 
@@ -239,12 +256,12 @@ public class EffectApproximationVisitor extends ASTVisitor<State, Set<QualifiedE
             Set<Variable> programImports = imports(module.getExpression());
             for (Variable programImport : programImports) {
                 Module importedModule = state.resolveModule(programImport);
-                state.resetBreadcrumbs(importedModule.getSpec().getQualifiedName());
-                result.addAll(approxModule(visitor, state, importedModule));
+                String fullName = programImport.getName();
+                int lastDot = fullName.lastIndexOf('.');
+                String varName = fullName.substring(lastDot + 1);
+                result.addAll(approxModule(visitor, state.with(varName), importedModule));
             }
         }
-
-        state.resetBreadcrumbs(module.getSpec().getQualifiedName());
         result.addAll(type.acceptVisitor(visitor, state));
         return result;
     }
@@ -263,8 +280,6 @@ public class EffectApproximationVisitor extends ASTVisitor<State, Set<QualifiedE
         ValueType resolvedType = state.resolveNominalType(nominalType);
         if (resolvedType != null) {
             // Found in module dependencies
-
-            state.resetBreadcrumbs(nominalType.getTypeMember());
             return resolvedType.acceptVisitor(this, state);
         } else {
             ValueType vt = nominalType.getCanonicalType(state.getCachedStandardContext());
@@ -300,10 +315,10 @@ public class EffectApproximationVisitor extends ASTVisitor<State, Set<QualifiedE
         } else {
             // Unannotated method
             for (FormalArg arg : defDeclType.getFormalArgs()) {
-                result.addAll(polyTy(this, state, arg.getType()));
+                result.addAll(polyTy(this, state.with(arg.getName()), arg.getType()));
             }
         }
-        result.addAll(polyTy(this, state, defDeclType.getRawResultType()));
+        result.addAll(polyTy(this, state.with(defDeclType.getName()), defDeclType.getRawResultType()));
         return result;
     }
 
@@ -314,14 +329,12 @@ public class EffectApproximationVisitor extends ASTVisitor<State, Set<QualifiedE
 
     @Override
     public Set<QualifiedEffect> visit(State state, ValDeclType valDeclType) {
-        state.addBreadcrumb(valDeclType.getName());
-        return valDeclType.getRawResultType().acceptVisitor(this, state);
+        return valDeclType.getRawResultType().acceptVisitor(this, state.with(valDeclType.getName()));
     }
 
     @Override
     public Set<QualifiedEffect> visit(State state, VarDeclType varDeclType) {
-        state.addBreadcrumb(varDeclType.getName());
-        return varDeclType.getRawResultType().acceptVisitor(this, state);
+        return varDeclType.getRawResultType().acceptVisitor(this, state.with(varDeclType.getName()));
     }
 
     // End algorithm

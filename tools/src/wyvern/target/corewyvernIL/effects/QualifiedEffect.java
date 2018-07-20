@@ -1,15 +1,20 @@
 package wyvern.target.corewyvernIL.effects;
 
 import wyvern.target.corewyvernIL.expression.Path;
+import wyvern.target.corewyvernIL.expression.Variable;
 import wyvern.tools.errors.FileLocation;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 public final class QualifiedEffect extends Effect {
     private final List<String> qualifier;
+
+    private static boolean isReal(String breadcrumb) {
+        return !breadcrumb.matches("var_[0-9]+");
+    }
 
     public static QualifiedEffect fromEffect(Effect e, ArrayDeque<String> breadcrumbs) {
         return new QualifiedEffect(e.getPath(), e.getName(), e.getLocation(), breadcrumbs);
@@ -17,8 +22,19 @@ public final class QualifiedEffect extends Effect {
 
     private QualifiedEffect(Path p, String n, FileLocation l, ArrayDeque<String> breadcrumbs) {
         super(p, n, l);
-        this.qualifier = new ArrayList<>(breadcrumbs);
-        Collections.reverse(this.qualifier);
+        this.qualifier = new ArrayList<>();
+        for (Iterator<String> iter = breadcrumbs.descendingIterator(); iter.hasNext();) {
+            String breadcrumb = iter.next();
+            if (isReal(breadcrumb)) {
+                this.qualifier.add(breadcrumb);
+            }
+        }
+        if (p instanceof Variable) {
+            String breadcrumb = ((Variable) p).getName();
+            if (isReal(breadcrumb)) {
+                this.qualifier.add(breadcrumb);
+            }
+        }
     }
 
     public List<String> getQualifier() {
@@ -59,7 +75,7 @@ public final class QualifiedEffect extends Effect {
 
         QualifiedEffect teObj = (QualifiedEffect) obj;
         return teObj.getName().equals(getName())
-                && teObj.getPath().equals(getPath())
+                && (teObj.getPath() == null && getPath() == null || teObj.getPath().equals(getPath()))
                 && teObj.getQualifier().equals(getQualifier());
     }
 
