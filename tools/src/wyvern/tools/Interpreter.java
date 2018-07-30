@@ -21,10 +21,12 @@ import java.util.Set;
 public final class Interpreter {
     private Interpreter() { }
     /**
-     * The interpreter only supports 1 argument, which is the path to the Wyvern
-     * file. If more arguments are supplied, it will exit with an error. Then,
-     * the file is read in to memory in it's entirety, before being executed in
-     * an empty context. The resulting value is printed to the screen.
+     * The interpreter supports 1 or 2 arguments. The first argument is
+     * optionally the --effects flag which runs the effect approximator, and
+     * the second argument is the path to the Wyvern file. If more arguments
+     * are supplied, it will exit with an error. Then, the file is read in to
+     * memory in it's entirety, before being executed in an empty context.
+     * The resulting value is printed to the screen.
      */
     public static void main(String[] args) {
         boolean effectMode = args.length == 2 && args[0].equals("--effects");
