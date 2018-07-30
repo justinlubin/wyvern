@@ -21,12 +21,18 @@ import java.util.Set;
 public final class Interpreter {
     private Interpreter() { }
     /**
-     * The interpreter supports 1 or 2 arguments. The first argument is
-     * optionally the --effects flag which runs the effect approximator, and
-     * the second argument is the path to the Wyvern file. If more arguments
-     * are supplied, it will exit with an error. Then, the file is read in to
-     * memory in it's entirety, before being executed in an empty context.
-     * The resulting value is printed to the screen.
+     * The interpreter supports 1 or 2 arguments.
+     *   1 argument form: The argument is the path to the Wyvern file to be
+     *                    executed. If more arguments are supplied, it will
+     *                    exit with an error. The file is read into memory in
+     *                    it's entirety, then executed in an empty context.
+     *                    The resulting value is printed to the screen.
+     *   2 argument form: The first argument must be the "--effects" flag, and
+     *                    the second argument is the path to the Wyvern file.
+     *                    If more arguments are supplied, it will exit with an
+     *                    error. The file is read into memory in it's entirety,
+     *                    then effect-approximated in an empty context. The
+     *                    resulting effect bound is printed to the screen.
      */
     public static void main(String[] args) {
         boolean effectMode = args.length == 2 && args[0].equals("--effects");
@@ -80,8 +86,9 @@ public final class Interpreter {
             TailCallVisitor.annotate(program);
             if (effectMode) {
                 approximateEffect(state, m);
+            } else {
+                program.interpret(Globals.getStandardEvalContext());
             }
-            program.interpret(Globals.getStandardEvalContext());
         /*} catch (ParseException e) {
             System.err.println("Parse error: " + e.getMessage());*/
         } catch (ToolError e) {
