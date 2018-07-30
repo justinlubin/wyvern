@@ -27,11 +27,12 @@ public final class Interpreter {
      * an empty context. The resulting value is printed to the screen.
      */
     public static void main(String[] args) {
-        if (args.length != 1) {
-            System.err.println("usage: wyvern <filename>");
+        boolean effectMode = args.length == 2 && args[0].equals("--effects");
+        if (!effectMode && args.length != 1) {
+            System.err.println("usage: wyvern [--effects] <filename>");
             System.exit(1);
         }
-        String filename = args[0];
+        String filename = effectMode ? args[1] : args[0];
         Path filepath = Paths.get(filename);
         if (!Files.isReadable(filepath)) {
             System.err.println("Cannot read file " + filename);
@@ -75,7 +76,9 @@ public final class Interpreter {
             program.typecheckNoAvoidance(ctx, null);
 
             TailCallVisitor.annotate(program);
-            approximateEffect(state, m);
+            if (effectMode) {
+                approximateEffect(state, m);
+            }
             program.interpret(Globals.getStandardEvalContext());
         /*} catch (ParseException e) {
             System.err.println("Parse error: " + e.getMessage());*/
@@ -88,11 +91,9 @@ public final class Interpreter {
     // For printing the effects of a program
     private static void approximateEffect(InterpreterState state, Module m) {
         Set<QualifiedEffect> effectBound = EffectApproximationVisitor.approximateEffectBound(state.getResolver(), m);
-        System.out.println("Effect bound: {");
         for (QualifiedEffect e : effectBound) {
-            System.out.println("  " + e.prettyString());
+            System.out.println(e.prettyString());
         }
-        System.out.println("}");
     }
 
     // used to set WYVERN_HOME when called programmatically
